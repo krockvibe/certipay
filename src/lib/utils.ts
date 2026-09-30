@@ -25,7 +25,9 @@ export function formatDate(date: Date | string): string {
 }
 
 export function generateTrackingCode(): string {
-  return Math.random().toString(36).substring(2, 12).toUpperCase().replace(/[^0-9]/g, '').padEnd(10, '0').substring(0, 10);
+  const values = new Uint32Array(10);
+  crypto.getRandomValues(values);
+  return Array.from(values, (value) => value % 10).join('');
 }
 
 export function generateTransactionId(): string {

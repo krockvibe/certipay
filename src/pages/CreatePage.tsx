@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeft, Copy, Check, AlertTriangle, Loader2, DollarSign, Eye, Edit, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -61,6 +61,14 @@ export function CreatePage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [activeTab, setActiveTab] = useState<"form" | "tracking">("form");
 
+  // Assign a stable receipt code up front so the preview shows the same
+  // code that gets saved (and can be looked up on /track).
+  useEffect(() => {
+    if (!currentForm.trackingCode) {
+      updateForm({ trackingCode: generateTrackingCode() });
+    }
+  }, [currentForm.trackingCode, updateForm]);
+
   const handleGenerate = useCallback(async () => {
     if (isGenerating) return;
     setIsGenerating(true);
@@ -76,6 +84,7 @@ export function CreatePage() {
       });
       setActiveTab("form");
       resetForm();
+      updateForm({ trackingCode: generateTrackingCode() });
       clearAll();
     } catch (error) {
       toast({
@@ -86,7 +95,7 @@ export function CreatePage() {
     } finally {
       setIsGenerating(false);
     }
-  }, [currentForm, uploadAll, saveReceipt, toast, resetForm, clearAll, isGenerating]);
+  }, [currentForm, uploadAll, saveReceipt, toast, resetForm, updateForm, clearAll, isGenerating]);
 
   const copyCode = useCallback((code: string) => {
     navigator.clipboard.writeText(code);

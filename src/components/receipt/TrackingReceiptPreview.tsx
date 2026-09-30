@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import type { ReceiptData, ReceiptFormData } from "@/types/receipt";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency, generateTrackingCode } from "@/lib/utils";
 
 interface TrackingReceiptPreviewProps {
   data: ReceiptData | ReceiptFormData;
@@ -37,8 +37,9 @@ export function TrackingReceiptPreview({ data, className, isDemo = true }: Track
     minute: "2-digit",
   }) : "Sep 29, 04:21 PM";
 
-  // Generate CPTXN format receipt code
-  const receiptCode = data.trackingCode || `CPTXN-${Math.random().toString(36).substring(2, 10).toUpperCase()}`;
+  // Stable receipt code: uses the code that will actually be saved
+  const [fallbackCode] = useState(() => generateTrackingCode());
+  const receiptCode = data.trackingCode || fallbackCode;
 
   const feeStatus = statusColors[data.feeStatus as keyof typeof statusColors] || statusColors.pending;
   const transferStatus = statusColors[data.status as keyof typeof statusColors] || statusColors.pending;
@@ -184,7 +185,7 @@ export function TrackingReceiptPreview({ data, className, isDemo = true }: Track
         </footer>
       </section>
 
-      {/* RECEIPT CODE - CPTXN format */}
+      {/* RECEIPT CODE */}
       <div className="receipt-code">
         Receipt code: <strong>{receiptCode}</strong>
       </div>

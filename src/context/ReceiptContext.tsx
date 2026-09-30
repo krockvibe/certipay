@@ -84,7 +84,7 @@ export function ReceiptProvider({ children }: { children: ReactNode }) {
     const now = new Date().toISOString();
     const receipt: ReceiptData = {
       id: crypto.randomUUID(),
-      trackingCode: generateTrackingCode(),
+      trackingCode: formData.trackingCode || generateTrackingCode(),
       transactionId: generateTransactionId(),
       createdAt: now,
       updatedAt: now,
