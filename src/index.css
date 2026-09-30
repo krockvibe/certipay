@@ -1,0 +1,471 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --radius: 0.5rem;
+    --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-display: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    --background: 0 0% 100%;
+    --foreground: 220 15% 8%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 8%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 8%;
+    --primary: 219 91% 32%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 15% 8%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 219 91% 32%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 90%;
+    --input: 220 13% 90%;
+    --ring: 219 91% 32%;
+  }
+
+  .dark {
+    --background: 220 15% 6%;
+    --foreground: 210 20% 98%;
+    --card: 220 15% 8%;
+    --card-foreground: 210 20% 98%;
+    --popover: 220 15% 8%;
+    --popover-foreground: 210 20% 98%;
+    --primary: 219 91% 42%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 220 15% 12%;
+    --secondary-foreground: 210 20% 98%;
+    --muted: 220 15% 12%;
+    --muted-foreground: 220 9% 60%;
+    --accent: 219 91% 42%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 15% 18%;
+    --input: 220 15% 18%;
+    --ring: 219 91% 42%;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .animate-in {
+    animation: fade-in 0.5s ease-out forwards;
+  }
+  .slide-in-from-left {
+    animation: slide-in 0.4s ease-out forwards;
+  }
+  .scale-in {
+    animation: scale-in 0.3s ease-out forwards;
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes accordion-down {
+  from { height: 0; }
+  to { height: var(--radix-accordion-content-height); }
+}
+
+@keyframes accordion-up {
+  from { height: var(--radix-accordion-content-height); }
+  to { height: 0; }
+}
+
+/* =========================
+   TRACKING RECEIPT PREVIEW
+========================= */
+
+.tracking-card {
+  min-height: 720px;
+  background: #3478be;
+  border-radius: 28px;
+  padding: 22px 20px;
+  box-sizing: border-box;
+  box-shadow: 0 20px 45px rgba(25, 70, 110, 0.15);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: white;
+}
+
+.tracking-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 25px;
+}
+
+.brand {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+.email-icon {
+  width: 21px;
+  height: 21px;
+  stroke: white;
+  stroke-width: 1.8;
+  fill: none;
+}
+
+.transfer-summary {
+  margin-bottom: 18px;
+}
+
+.greeting {
+  font-size: 16px;
+  line-height: 1.4;
+  margin-bottom: 1px;
+}
+
+.sender-line {
+  font-size: 24px;
+  line-height: 1.25;
+  font-weight: 400;
+}
+
+.sender-line strong {
+  color: #ffef00;
+  font-weight: 500;
+}
+
+.amount {
+  font-size: 32px;
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: .2px;
+  margin-top: 2px;
+}
+
+.receipt {
+  background: #fff;
+  border-radius: 22px;
+  padding: 19px 20px 17px;
+  width: 100%;
+  color: #1d2b42;
+}
+
+.demo-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(255, 243, 205, 0.96);
+  color: #805b00;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .7px;
+}
+
+.transaction-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.transaction-title {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 500;
+  color: #202d43;
+  line-height: 1.3;
+}
+
+.transaction-title span:last-child {
+  overflow-wrap: anywhere;
+}
+
+.purple-dot {
+  width: 9px;
+  height: 9px;
+  min-width: 9px;
+  border-radius: 50%;
+  background: #b889ff;
+}
+
+.time-badge {
+  flex-shrink: 0;
+  background: #f0eaff;
+  color: #7339db;
+  border-radius: 999px;
+  padding: 7px 10px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.progress-section {
+  margin-bottom: 20px;
+}
+
+.progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 7px;
+  color: #71809a;
+  font-size: 12px;
+}
+
+.progress-track {
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #d9dde3;
+}
+
+.progress-fill {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      #c52d3b 0px,
+      #c52d3b 12px,
+      #e05b65 12px,
+      #e05b65 24px
+    );
+  background-size: 24px 100%;
+  transition: width 900ms ease;
+  animation: stripe-move 1s linear infinite;
+}
+
+@keyframes stripe-move {
+  0% {
+    background-position-x: 0;
+  }
+  100% {
+    background-position-x: 24px;
+  }
+}
+
+.status-list {
+  display: flex;
+  flex-direction: column;
+  gap: 17px;
+}
+
+.status-row {
+  display: grid;
+  grid-template-columns: 9px 1fr auto;
+  column-gap: 9px;
+  align-items: start;
+}
+
+.status-marker {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  margin-top: 5px;
+}
+
+.marker-orange { background: #ffbd51; }
+.marker-yellow { background: #e9a71e; }
+.marker-red { width: 4px; border-radius: 3px; background: #f02d45; }
+
+.status-content { min-width: 0; }
+
+.status-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #25334a;
+  line-height: 1.25;
+}
+
+.status-description {
+  color: #637794;
+  font-size: 12px;
+  line-height: 1.35;
+  margin-top: 4px;
+  max-width: 245px;
+}
+
+.status-badge {
+  justify-self: end;
+  padding: 6px 11px;
+  border-radius: 999px;
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.badge-pending { background: #fff1ca; color: #d68200; }
+.badge-completed { background: #d2f7e6; color: #008a62; }
+
+.clock-icon {
+  width: 15px;
+  height: 15px;
+  stroke: #e7a921;
+  fill: none;
+  stroke-width: 1.7;
+}
+
+.metadata {
+  margin-top: 19px;
+  padding-top: 16px;
+  border-top: 1px solid #e7ecf2;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 20px;
+  row-gap: 16px;
+}
+
+.meta-label {
+  color: #91a2bb;
+  font-size: 11px;
+  margin-bottom: 2px;
+}
+
+.meta-value {
+  color: #26364e;
+  font-size: 12px;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.meta-value.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 10px;
+}
+
+.receipt-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-top: 1px solid #e7ecf2;
+  margin-top: 15px;
+  padding-top: 14px;
+}
+
+.powered { color: #91a2bb; font-size: 10px; }
+.visa-badge {
+  background: linear-gradient(135deg, #1a1f71 0%, #2d3aa0 100%);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-style: italic;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border-radius: 2px;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(26, 31, 113, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.15);
+  /* VISA-style gold accent */
+  position: relative;
+  overflow: hidden;
+}
+.visa-badge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255,215,0,0.1) 50%, transparent 100%);
+  pointer-events: none;
+}
+
+.receipt-code {
+  text-align: center;
+  color: rgba(255,255,255,.78);
+  font-size: 10px;
+  letter-spacing: .5px;
+  margin-top: 26px;
+}
+
+.receipt-code strong { letter-spacing: 2px; }
+
+.legal-footer-text {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 11px;
+  line-height: 1.6;
+  margin-top: 16px;
+  margin-bottom: 8px;
+  padding: 0 12px;
+}
+
+.legal-footer-text .legal-paragraph {
+  margin: 0 0 8px 0;
+  padding: 0;
+}
+
+.legal-footer-text .legal-paragraph:last-child {
+  margin-bottom: 0;
+  margin-top: 16px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 430px) {
+  .tracking-card {
+    width: 100%;
+    min-height: 100vh;
+    border-radius: 0;
+    padding: 18px 16px 20px;
+  }
+  .sender-line { font-size: 23px; }
+  .amount { font-size: 31px; }
+}
+
+@media (max-width: 340px) {
+  .tracking-card { padding-left: 13px; padding-right: 13px; }
+  .receipt { padding-left: 15px; padding-right: 15px; }
+  .metadata { grid-template-columns: 1fr; }
+  .transaction-header { flex-direction: column; }
+  .time-badge { align-self: flex-start; }
+  .amount { font-size: 28px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress-fill { transition: none; }
+}
