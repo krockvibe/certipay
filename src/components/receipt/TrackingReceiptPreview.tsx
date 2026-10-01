@@ -69,8 +69,8 @@ export function TrackingReceiptPreview({ data, className }: TrackingReceiptPrevi
             alt={bankName}
             className="brand-image"
             style={{
-              height: "20px",
-              maxWidth: "96px",
+              height: "32px",
+              maxWidth: "192px",
               width: "auto",
               objectFit: "contain",
               objectPosition: "left center",

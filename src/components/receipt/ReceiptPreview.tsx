@@ -64,8 +64,8 @@ export function ReceiptPreview({ data, className }: ReceiptPreviewProps) {
                   src={data.bankLogoUrl}
                   alt={data.bankName || "Bank Logo"}
                   style={{
-                    height: "32px",
-                    maxWidth: "150px",
+                    height: "48px",
+                    maxWidth: "288px",
                     width: "auto",
                     objectFit: "contain",
                     objectPosition: "left center",
