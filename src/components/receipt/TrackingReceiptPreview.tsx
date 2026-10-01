@@ -73,7 +73,8 @@ export function TrackingReceiptPreview({ data, className }: TrackingReceiptPrevi
               maxWidth: "320px",
               width: "auto",
               objectFit: "contain",
-              objectPosition: "left center",
+              objectPosition: "left top",
+              marginLeft: "-4px",
             }}
           />
         )}

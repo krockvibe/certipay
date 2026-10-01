@@ -68,7 +68,8 @@ export function ReceiptPreview({ data, className }: ReceiptPreviewProps) {
                     maxWidth: "576px",
                     width: "auto",
                     objectFit: "contain",
-                    objectPosition: "left center",
+                    objectPosition: "left top",
+                    marginLeft: "-4px",
                   }}
                 />
               )}
