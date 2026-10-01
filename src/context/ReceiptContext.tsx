@@ -9,6 +9,12 @@ interface ReceiptState {
   currentForm: ReceiptFormData;
   isLoading: boolean;
   editingId: string | null;
+  /**
+   * Bumped whenever receipts are created, edited, or deleted. Pages that hold a
+   * receipt outside the context (the track page snapshots one so it can render a
+   * receipt created on another device) watch this to know their snapshot is stale.
+   */
+  revision: number;
 }
 
 type ReceiptAction =
@@ -26,6 +32,7 @@ const initialState: ReceiptState = {
   currentForm: defaultFormData,
   isLoading: true,
   editingId: null,
+  revision: 0,
 };
 
 function receiptReducer(state: ReceiptState, action: ReceiptAction): ReceiptState {
@@ -33,16 +40,18 @@ function receiptReducer(state: ReceiptState, action: ReceiptAction): ReceiptStat
     case "SET_RECEIPTS":
       return { ...state, receipts: action.payload, isLoading: false };
     case "ADD_RECEIPT":
-      return { ...state, receipts: [action.payload, ...state.receipts] };
+      return { ...state, receipts: [action.payload, ...state.receipts], revision: state.revision + 1 };
     case "UPDATE_RECEIPT":
       return {
         ...state,
         receipts: state.receipts.map((r) => (r.id === action.payload.id ? action.payload : r)),
+        revision: state.revision + 1,
       };
     case "DELETE_RECEIPT":
       return {
         ...state,
         receipts: state.receipts.filter((r) => r.id !== action.payload),
+        revision: state.revision + 1,
       };
     case "UPDATE_FORM":
       return { ...state, currentForm: { ...state.currentForm, ...action.payload } };
@@ -92,6 +101,22 @@ export function ReceiptProvider({ children }: { children: ReactNode }) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.receipts));
     }
   }, [state.receipts, state.isLoading]);
+
+  // Keep open tabs in step. The storage event only fires in *other* tabs, so
+  // editing a receipt on the dashboard in one tab updates the track page open in
+  // another without a reload.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key !== STORAGE_KEY || !e.newValue) return;
+      try {
+        dispatch({ type: "SET_RECEIPTS", payload: JSON.parse(e.newValue) });
+      } catch {
+        // Ignore an unreadable value rather than clearing the list.
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   // Publish receipts that predate the shared store. Their codes only ever lived
   // in this browser's localStorage, so they were invisible to every other device

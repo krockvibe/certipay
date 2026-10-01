@@ -6,16 +6,26 @@ import { Toast, ToastProvider, ToastViewport, ToastTitle, ToastDescription, Toas
 import { useToast } from "@/hooks/useToast";
 import { useReceipts } from "@/context/ReceiptContext";
 import { TrackingReceiptPreview } from "@/components/receipt/TrackingReceiptPreview";
+import type { ReceiptData } from "@/types/receipt";
 
 export function TrackPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { getReceiptByCode, isLoading: isHydrating } = useReceipts();
+  const { getReceiptByCode, receipts, revision, isLoading: isHydrating } = useReceipts();
   const { toasts, toast, dismiss } = useToast();
 
   const [code, setCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [receipt, setReceipt] = useState<any | null>(null);
+  const [trackedCode, setTrackedCode] = useState<string | null>(null);
+  const [remoteReceipt, setRemoteReceipt] = useState<ReceiptData | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  /**
+   * Prefer the context copy so an edit made on the dashboard or create page is
+   * reflected here without re-searching. remoteReceipt covers receipts that were
+   * fetched from the shared store and are not owned by this browser.
+   */
+  const localReceipt = trackedCode ? getReceiptByCode(trackedCode) : undefined;
+  const receipt = localReceipt ?? remoteReceipt;
 
   const handleSearch = useCallback(async (searchCode: string) => {
     const trimmed = searchCode.trim();
@@ -25,7 +35,7 @@ export function TrackPage() {
     }
     setIsLoading(true);
     setError(null);
-    setReceipt(null);
+    setRemoteReceipt(null);
 
     const normalized = trimmed.toUpperCase();
 
@@ -37,15 +47,18 @@ export function TrackPage() {
       // another browser, still resolves.
       if (!found) {
         found = (await fetchSharedReceipt(normalized)) ?? undefined;
+        // Cache it so edits made locally take over the render from here on.
+        if (found) setRemoteReceipt(found);
       }
 
       if (!found) {
+        setTrackedCode(null);
         setError("No receipt found with that code.");
         return;
       }
 
       await new Promise(r => setTimeout(r, 200));
-      setReceipt(found);
+      setTrackedCode(normalized);
       setSearchParams({ code: normalized }, { replace: true });
       toast({
         title: "Receipt Found",
@@ -58,6 +71,29 @@ export function TrackPage() {
       setIsLoading(false);
     }
   }, [getReceiptByCode, setSearchParams, toast]);
+
+  // Keep a receipt fetched from the shared store in sync when the same code is
+  // edited locally, so this page follows the edit instead of the stale copy.
+  useEffect(() => {
+    if (!trackedCode) return;
+    const updated = receipts.find((r) => r.trackingCode === trackedCode);
+    if (updated) setRemoteReceipt(updated);
+  }, [revision, trackedCode, receipts]);
+
+  // Pick up edits made on another device when the user comes back to this tab.
+  // Re-fetching on focus only, rather than polling, keeps it cheap.
+  useEffect(() => {
+    if (!trackedCode) return;
+    const refresh = async () => {
+      const fresh = await fetchSharedReceipt(trackedCode);
+      if (!fresh) return;
+      setRemoteReceipt((current) =>
+        !current || fresh.updatedAt > current.updatedAt ? fresh : current,
+      );
+    };
+    window.addEventListener("focus", refresh);
+    return () => window.removeEventListener("focus", refresh);
+  }, [trackedCode]);
 
   // Initialize from the ?code= query param. Declared after handleSearch so
   // the callback is initialized before the effect that references it.
@@ -174,7 +210,8 @@ export function TrackPage() {
                   onClick={() => {
                     // Drop the stale ?code= so a refresh does not re-run the
                     // previous search, and reset the error from that attempt.
-                    setReceipt(null);
+                    setTrackedCode(null);
+                    setRemoteReceipt(null);
                     setCode("");
                     setError(null);
                     setSearchParams({}, { replace: true });
