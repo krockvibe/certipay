@@ -124,6 +124,9 @@ export function CreatePage() {
                   <Link to="/track" className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted">
                     Track
                   </Link>
+                  <Link to="/dashboard" className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted">
+                    Dashboard
+                  </Link>
                 </nav>
               </div>
               <div className="flex items-center gap-2">
