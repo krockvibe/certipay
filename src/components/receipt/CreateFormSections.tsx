@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -288,6 +288,16 @@ export function BrandingSection() {
   const handleColorChange = (field: "backgroundColor" | "brandColor", value: string) => {
     updateForm({ [field]: value });
   };
+
+  // The preview on this page renders the receipt live, so the picked files have
+  // to reach the form state. Without this the File objects stay local to the
+  // upload hook and the preview only gets a logo after the receipt is generated.
+  useEffect(() => {
+    updateForm({
+      bankLogoFile: bankLogo.file,
+      receiptImageFile: receiptImage.file,
+    });
+  }, [bankLogo.file, receiptImage.file, updateForm]);
 
   const renderImageUpload = (
     label: string,
