@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, AlertCircle, Loader2, DollarSign } from "lucide-react";
 import { MobileNav } from "@/components/MobileNav";
+import { fetchSharedReceipt } from "@/lib/receiptApi";
 import { Toast, ToastProvider, ToastViewport, ToastTitle, ToastDescription, ToastClose } from "@/components/ui/toast";
 import { useToast } from "@/hooks/useToast";
 import { useReceipts } from "@/context/ReceiptContext";
@@ -9,7 +10,7 @@ import { TrackingReceiptPreview } from "@/components/receipt/TrackingReceiptPrev
 
 export function TrackPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { getReceiptByCode } = useReceipts();
+  const { getReceiptByCode, isLoading: isHydrating } = useReceipts();
   const { toasts, toast, dismiss } = useToast();
 
   const [code, setCode] = useState("");
@@ -27,23 +28,33 @@ export function TrackPage() {
     setError(null);
     setReceipt(null);
 
+    const normalized = trimmed.toUpperCase();
+
     try {
-      const found = getReceiptByCode(trimmed.toUpperCase());
+      // Local first so an already-loaded receipt renders instantly.
+      let found = getReceiptByCode(normalized);
+
+      // Fall back to the shared API so a code created on another device, or
+      // another browser, still resolves.
+      if (!found) {
+        found = (await fetchSharedReceipt(normalized)) ?? undefined;
+      }
+
       if (!found) {
         setError("No receipt found with that code.");
         return;
       }
-      // Simulate network delay for better UX
-      await new Promise(r => setTimeout(r, 400));
+
+      await new Promise(r => setTimeout(r, 200));
       setReceipt(found);
-      setSearchParams({ code: trimmed.toUpperCase() }, { replace: true });
+      setSearchParams({ code: normalized }, { replace: true });
       toast({
         title: "Receipt Found",
         description: `Tracking ${found.trackingCode}`,
         variant: "success",
       });
-    } catch (e: any) {
-      setError(e.message || "Failed to find receipt");
+    } catch {
+      setError("Could not look up that code. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -56,11 +67,15 @@ export function TrackPage() {
     if (!urlCode) return;
     const normalized = urlCode.trim().toUpperCase();
     setCode(normalized);
+    // Wait for the localStorage copy to load before searching, otherwise the
+    // lookup runs against an empty store and reports a false "not found".
+    if (isHydrating) return;
     void handleSearch(normalized);
     // handleSearch is stable for the inputs it reads; re-running on every
     // change would re-trigger the search and loop via setSearchParams.
+    // Re-run when hydration finishes so the deferred search actually fires.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isHydrating]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,7 +172,14 @@ export function TrackPage() {
               {/* Track Another Button */}
               <div className="mt-6 text-center">
                 <button
-                  onClick={() => { setReceipt(null); setCode(""); }}
+                  onClick={() => {
+                    // Drop the stale ?code= so a refresh does not re-run the
+                    // previous search, and reset the error from that attempt.
+                    setReceipt(null);
+                    setCode("");
+                    setError(null);
+                    setSearchParams({}, { replace: true });
+                  }}
                   className="text-xs text-[#526B83] underline hover:text-[#078BC5] transition-colors"
                 >
                   Track another receipt

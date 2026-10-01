@@ -2,6 +2,7 @@ import { createContext, useContext, useReducer, type ReactNode, useEffect } from
 import type { ReceiptData, ReceiptFormData } from "@/types/receipt";
 import { defaultFormData } from "@/types/receipt";
 import { generateTrackingCode, generateTransactionId } from "@/lib/utils";
+import { publishReceipt } from "@/lib/receiptApi";
 
 interface ReceiptState {
   receipts: ReceiptData[];
@@ -135,6 +136,9 @@ export function ReceiptProvider({ children }: { children: ReactNode }) {
       isAnonymous: !userEmail,
     };
     dispatch({ type: "ADD_RECEIPT", payload: receipt });
+    // Publish so the code resolves on other devices too. Failure is non-fatal:
+    // the local copy is already saved.
+    void publishReceipt(receipt);
     return receipt;
   };
 
@@ -183,6 +187,8 @@ export function ReceiptProvider({ children }: { children: ReactNode }) {
 
     dispatch({ type: "UPDATE_RECEIPT", payload: receipt });
     dispatch({ type: "SET_EDITING", payload: null });
+    // Re-publish under the same code so edits are visible to anyone tracking it.
+    void publishReceipt(receipt);
     return receipt;
   };
 
