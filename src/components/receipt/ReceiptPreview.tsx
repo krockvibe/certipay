@@ -52,7 +52,7 @@ export function ReceiptPreview({ data, className }: ReceiptPreviewProps) {
       
       <div className="relative p-6 space-y-6">
         {/* Header with Logo and Bank */}
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             {data.logoUrl && (
               <img
@@ -62,19 +62,28 @@ export function ReceiptPreview({ data, className }: ReceiptPreviewProps) {
               />
             )}
             <div>
-              <h1 className="font-display text-2xl font-bold text-foreground" style={{ color: data.brandColor }}>
-                CertiPay
-              </h1>
+              {/* An uploaded bank logo replaces the CertiPay wordmark, capped to
+                  the height and width of the heading it stands in for. */}
+              {data.bankLogoUrl ? (
+                <img
+                  src={data.bankLogoUrl}
+                  alt={data.bankName || "Bank Logo"}
+                  style={{
+                    height: "32px",
+                    maxWidth: "150px",
+                    width: "auto",
+                    objectFit: "contain",
+                    objectPosition: "left center",
+                  }}
+                />
+              ) : (
+                <h1 className="font-display text-2xl font-bold text-foreground" style={{ color: data.brandColor }}>
+                  CertiPay
+                </h1>
+              )}
               <p className="text-sm text-muted-foreground">Secure Transfer Receipt</p>
             </div>
           </div>
-          {data.bankLogoUrl && (
-            <img
-              src={data.bankLogoUrl}
-              alt="Bank Logo"
-              className="h-10 w-auto rounded-lg object-contain opacity-80"
-            />
-          )}
         </div>
 
         {/* Receipt Image */}
