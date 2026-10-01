@@ -1,8 +1,8 @@
-import { createContext, useContext, useReducer, type ReactNode, useEffect } from "react";
+import { createContext, useContext, useReducer, useRef, type ReactNode, useEffect } from "react";
 import type { ReceiptData, ReceiptFormData } from "@/types/receipt";
 import { defaultFormData } from "@/types/receipt";
 import { generateTrackingCode, generateTransactionId } from "@/lib/utils";
-import { publishReceipt } from "@/lib/receiptApi";
+import { publishReceipt, backfillReceipts } from "@/lib/receiptApi";
 
 interface ReceiptState {
   receipts: ReceiptData[];
@@ -92,6 +92,16 @@ export function ReceiptProvider({ children }: { children: ReactNode }) {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state.receipts));
     }
   }, [state.receipts, state.isLoading]);
+
+  // Publish receipts that predate the shared store. Their codes only ever lived
+  // in this browser's localStorage, so they were invisible to every other device
+  // until they are uploaded. Runs once per session, after hydration.
+  const didBackfill = useRef(false);
+  useEffect(() => {
+    if (state.isLoading || didBackfill.current || state.receipts.length === 0) return;
+    didBackfill.current = true;
+    void backfillReceipts(state.receipts);
+  }, [state.isLoading, state.receipts]);
 
   const updateForm = (data: Partial<ReceiptFormData>) => {
     dispatch({ type: "UPDATE_FORM", payload: data });

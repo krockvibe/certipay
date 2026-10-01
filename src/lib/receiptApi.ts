@@ -55,6 +55,52 @@ export async function publishReceipt(receipt: ReceiptData): Promise<boolean> {
 }
 
 /**
+ * True when the API has no record of this code. Used by the startup backfill to
+ * avoid re-uploading every local receipt on every page load.
+ */
+export async function sharedReceiptExists(code: string): Promise<boolean> {
+  if (storeUnavailable) return false;
+
+  try {
+    const res = await fetch(`${API_PATH}?code=${encodeURIComponent(code)}`, {
+      method: "HEAD",
+    });
+    if (res.status === 503) {
+      storeUnavailable = true;
+      return false;
+    }
+    return res.status === 200;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Publish any locally-stored receipt the shared store does not have yet.
+ *
+ * Receipts created before the shared store existed were only ever written to
+ * this browser's localStorage, so they were unreachable from any other device.
+ * Re-uploading them on startup makes their codes resolve everywhere. Idempotent:
+ * blobs are written at a deterministic path per code, and codes already present
+ * in the shared store are skipped.
+ */
+export async function backfillReceipts(receipts: ReceiptData[]): Promise<number> {
+  if (storeUnavailable || receipts.length === 0) return 0;
+
+  let uploaded = 0;
+  for (const receipt of receipts) {
+    const code = receipt.trackingCode?.trim();
+    if (!/^\d{10}$/.test(code ?? "")) continue;
+
+    // Sequential on purpose: a burst of parallel writes is the one thing that
+    // can trip the store's rate limiting while the app is loading.
+    if (await sharedReceiptExists(code)) continue;
+    if (await publishReceipt(receipt)) uploaded += 1;
+  }
+  return uploaded;
+}
+
+/**
  * Resolve a code. Falls back to null when the API has no record so the caller
  * can fall back to the local copy without showing an error.
  */

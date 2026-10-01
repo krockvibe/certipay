@@ -22,6 +22,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 
+  // HEAD answers "does this code exist?" without transferring the receipt body.
+  // The client uses it to decide which local receipts still need uploading.
+  if (req.method === "HEAD") {
+    const code = String(req.query.code ?? "").trim();
+    if (!CODE_RE.test(code)) {
+      return res.status(400).json({ error: "invalid_code" });
+    }
+    const receipt = await readReceiptFromStore(code);
+    res.setHeader("Cache-Control", "no-store");
+    return res.status(receipt ? 200 : 404).end();
+  }
+
   if (req.method === "GET") {
     const code = String(req.query.code ?? "").trim();
     if (!CODE_RE.test(code)) {
