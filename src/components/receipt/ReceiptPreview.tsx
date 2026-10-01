@@ -51,20 +51,15 @@ export function ReceiptPreview({ data, className }: ReceiptPreviewProps) {
       <div className="absolute inset-0 bg-gradient-to-br from-transparent via-brand-color/5 to-transparent" />
       
       <div className="relative p-6 space-y-6">
-        {/* Header with Logo and Bank */}
+        {/* Header: the uploaded bank logo is the only brand mark. The legacy
+            logoUrl image is deliberately not rendered, so the header never shows
+            two competing logos. */}
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            {data.logoUrl && (
-              <img
-                src={data.logoUrl}
-                alt="Company Logo"
-                className="h-12 w-auto rounded-lg object-contain"
-              />
-            )}
             <div>
-              {/* An uploaded bank logo replaces the CertiPay wordmark, capped to
-                  the height and width of the heading it stands in for. */}
-              {data.bankLogoUrl ? (
+              {/* The bank logo IS the brand on this receipt. No text fallback:
+                  if no logo is uploaded the slot is simply empty. */}
+              {data.bankLogoUrl && (
                 <img
                   src={data.bankLogoUrl}
                   alt={data.bankName || "Bank Logo"}
@@ -76,10 +71,6 @@ export function ReceiptPreview({ data, className }: ReceiptPreviewProps) {
                     objectPosition: "left center",
                   }}
                 />
-              ) : (
-                <h1 className="font-display text-2xl font-bold text-foreground" style={{ color: data.brandColor }}>
-                  CertiPay
-                </h1>
               )}
               <p className="text-sm text-muted-foreground">Secure Transfer Receipt</p>
             </div>
