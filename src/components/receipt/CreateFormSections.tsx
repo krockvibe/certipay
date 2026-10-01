@@ -283,7 +283,7 @@ export function FooterSection() {
 
 export function BrandingSection() {
   const { currentForm, updateForm } = useReceipts();
-  const { logo, bankLogo, receiptImage, uploadAll, clearAll } = useMultipleImageUploads();
+  const { bankLogo, receiptImage, uploadAll, clearAll } = useMultipleImageUploads();
 
   const handleColorChange = (field: "backgroundColor" | "brandColor", value: string) => {
     updateForm({ [field]: value });
@@ -332,7 +332,7 @@ export function BrandingSection() {
   );
 
   return (
-    <FormSection title="Branding & Images" description="Customize the look and feel of your receipt" icon={<Palette className="h-5 w-5" />}>
+    <FormSection title="Branding & Images" description="Your bank logo replaces the CertiPay name on the receipt" icon={<Palette className="h-5 w-5" />}>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="backgroundColor">Background Color</Label>
@@ -372,8 +372,10 @@ export function BrandingSection() {
 
       <Separator className="my-4" />
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        {renderImageUpload("Logo", logo, logo.clear)}
+      {/* One brand image, not two. The uploaded image replaces the CertiPay
+          wordmark in the receipt header, so a separate "Logo" slot would only
+          ever be a second source for the same thing. */}
+      <div className="grid gap-4 sm:grid-cols-2">
         {renderImageUpload("Bank Logo", bankLogo, bankLogo.clear)}
         {renderImageUpload("Receipt Image", receiptImage, receiptImage.clear)}
       </div>
