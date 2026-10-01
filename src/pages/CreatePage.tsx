@@ -53,7 +53,7 @@ const previewData: ReceiptFormData = {
 
 export function CreatePage() {
   const navigate = useNavigate();
-  const { currentForm, updateForm, resetForm, saveReceipt, isLoading } = useReceipts();
+  const { currentForm, updateForm, resetForm, saveReceipt, updateReceipt, editingId, isLoading } = useReceipts();
   const { user } = useAuth();
   const { logo, bankLogo, receiptImage, uploadAll, clearAll } = useMultipleImageUploads();
   const { toasts, toast, dismiss } = useToast();
@@ -75,6 +75,28 @@ export function CreatePage() {
 
     try {
       const { logoUrl, bankLogoUrl, receiptImageUrl } = await uploadAll();
+
+      if (editingId) {
+        const updated = updateReceipt(currentForm, logoUrl, bankLogoUrl, receiptImageUrl);
+        if (!updated) {
+          toast({
+            title: "Error",
+            description: "Could not find the receipt to update.",
+            variant: "destructive",
+          });
+          return;
+        }
+        setGeneratedReceipt({ code: updated.trackingCode, data: updated });
+        toast({
+          title: "Receipt Updated",
+          description: `Changes saved to ${updated.trackingCode}`,
+          variant: "success",
+        });
+        resetForm();
+        clearAll();
+        return;
+      }
+
       const receipt = saveReceipt(currentForm, logoUrl, bankLogoUrl, receiptImageUrl, user?.email);
       setGeneratedReceipt({ code: receipt.trackingCode, data: receipt });
       toast({
@@ -95,7 +117,7 @@ export function CreatePage() {
     } finally {
       setIsGenerating(false);
     }
-  }, [currentForm, uploadAll, saveReceipt, toast, resetForm, updateForm, clearAll, isGenerating]);
+  }, [currentForm, uploadAll, saveReceipt, updateReceipt, editingId, toast, resetForm, updateForm, clearAll, isGenerating]);
 
   const copyCode = useCallback((code: string) => {
     navigator.clipboard.writeText(code);
@@ -153,9 +175,13 @@ export function CreatePage() {
             </Link>
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="font-display text-3xl font-bold text-foreground">Create Receipt</h1>
+                <h1 className="font-display text-3xl font-bold text-foreground">
+                  {editingId ? "Edit Receipt" : "Create Receipt"}
+                </h1>
                 <p className="text-muted-foreground mt-1">
-                  Fill in the details below. A unique 10-digit tracking code will be generated on save.
+                  {editingId
+                    ? "Update the details below. The tracking code stays the same."
+                    : "Fill in the details below. A unique 10-digit tracking code will be generated on save."}
                 </p>
               </div>
               <div className="flex items-center gap-2">
@@ -187,7 +213,7 @@ export function CreatePage() {
                     disabled={isGenerating}
                   >
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    Reset Form
+                    {editingId ? "Cancel Edit" : "Reset Form"}
                   </Button>
                 </div>
                 {!isFormValid && (

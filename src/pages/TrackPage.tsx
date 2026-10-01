@@ -99,7 +99,7 @@ export function TrackPage() {
         <main className="flex-1 flex flex-col items-center pt-8">
           {/* STATE 1 & 2 & 3 & 4: Empty, Invalid, Not Found, Loading */}
           {!receipt && !isLoading && (
-            <section className="w-full max-w-448px text-center">
+            <section className="w-full max-w-md text-center">
               <h1 className="text-3xl md:text-4xl font-medium tracking-tight text-[#07111F] mb-2">
                 Track your transfer
               </h1>
@@ -148,7 +148,7 @@ export function TrackPage() {
 
           {/* STATE 4: Loading */}
           {isLoading && !receipt && (
-            <section className="w-full max-w-448px pt-8">
+            <section className="w-full max-w-md pt-8">
               <div className="flex flex-col items-center gap-4">
                 <p className="text-sm text-[#526B83]">
                   Searching receipt…
@@ -163,7 +163,7 @@ export function TrackPage() {
 
           {/* STATE 5: Receipt Found */}
           {receipt && (
-            <section className="w-full max-w-448px pt-8">
+            <section className="w-full max-w-md pt-8">
               <div className="flex justify-center">
                 <TrackingReceiptPreview data={receipt} isDemo={false} />
               </div>
@@ -181,6 +181,18 @@ export function TrackPage() {
           )}
         </main>
       </div>
+
+      <ToastViewport className="fixed bottom-4 right-4 z-50">
+        {toasts.map((t) => (
+          <Toast key={t.id} variant={t.variant}>
+            <div className="grid gap-1">
+              <ToastTitle>{t.title}</ToastTitle>
+              {t.description && <ToastDescription>{t.description}</ToastDescription>}
+            </div>
+            <ToastClose onClick={() => dismiss(t.id)} />
+          </Toast>
+        ))}
+      </ToastViewport>
     </ToastProvider>
   );
 }

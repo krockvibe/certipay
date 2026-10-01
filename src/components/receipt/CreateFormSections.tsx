@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { Upload, X, FileImage, Palette, CreditCard, Building2, User, Mail, Calendar, DollarSign, Loader2 } from "lucide-react";
+import { Upload, X, FileImage, Palette, CreditCard, Building2, User, Mail, Calendar, DollarSign, Loader2, Edit } from "lucide-react";
 import { useReceipts } from "@/context/ReceiptContext";
 import type { ReceiptFormData } from "@/types/receipt";
 import { CURRENCIES, PAYMENT_METHODS, STATUSES, FEE_STATUSES, defaultFormData } from "@/types/receipt";
@@ -382,7 +382,7 @@ export function BrandingSection() {
 }
 
 export function GenerateButton({ onGenerate }: { onGenerate: () => void }) {
-  const { currentForm } = useReceipts();
+  const { currentForm, editingId } = useReceipts();
   const isValid = currentForm.senderName && currentForm.receiverName && currentForm.bankName && currentForm.accountNumber && currentForm.amount;
 
   return (
@@ -393,8 +393,8 @@ export function GenerateButton({ onGenerate }: { onGenerate: () => void }) {
       className="w-full sm:w-auto gap-2 bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-200"
       style={{ minWidth: "200px" }}
     >
-      <Loader2 className="h-5 w-5 animate-spin" />
-      Generate Receipt
+      {editingId ? <Edit className="h-5 w-5" /> : <Loader2 className="h-5 w-5 animate-spin" />}
+      {editingId ? "Save Changes" : "Generate Receipt"}
     </Button>
   );
 }

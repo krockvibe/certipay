@@ -45,14 +45,13 @@ function StatCard({ title, value, icon: Icon, color }: { title: string; value: s
 export function DashboardPage() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { receipts, getReceiptByCode } = useReceipts();
+  const { receipts, getReceiptByCode, deleteReceipt, startEditing } = useReceipts();
   const { toasts, toast, dismiss } = useToast();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
   const [viewMode, setViewMode] = useState<"receipt" | "tracking">("tracking");
-  const [isDeleting, setIsDeleting] = useState<string | null>(null);
 
   const userReceipts = receipts.filter((r) => r.createdBy === user?.email || !r.createdBy);
   const sortedReceipts = [...userReceipts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
@@ -65,13 +64,15 @@ export function DashboardPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const handleDelete = async (code: string) => {
-    if (!confirm("Are you sure you want to delete this receipt?")) return;
-    setIsDeleting(code);
-    setTimeout(() => {
-      toast({ title: "Deleted", description: "Receipt has been removed", variant: "success" });
-      setIsDeleting(null);
-    }, 500);
+  const handleDelete = (receipt: ReceiptData) => {
+    if (!confirm(`Delete receipt ${receipt.trackingCode}? This cannot be undone.`)) return;
+    deleteReceipt(receipt.id);
+    setSelectedReceipt((current) => (current?.id === receipt.id ? null : current));
+    toast({
+      title: "Receipt Deleted",
+      description: `${receipt.trackingCode} has been removed`,
+      variant: "success",
+    });
   };
 
   const handleView = (receipt: ReceiptData) => {
@@ -80,7 +81,8 @@ export function DashboardPage() {
   };
 
   const handleEdit = (receipt: ReceiptData) => {
-    toast({ title: "Edit feature coming soon", variant: "default" });
+    startEditing(receipt);
+    navigate("/create");
   };
 
   const handlePrint = (receipt: ReceiptData) => {
@@ -291,10 +293,10 @@ export function DashboardPage() {
                               <Button variant="ghost" size="icon" onClick={() => handleView(receipt)} title="View tracking">
                                 <Eye className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="icon" onClick={() => handleEdit(receipt)} title="Edit" disabled={isDeleting === receipt.trackingCode}>
+                              <Button variant="ghost" size="icon" onClick={() => handleEdit(receipt)} title="Edit">
                                 <Edit className="h-4 w-4" />
                               </Button>
-                              <Button variant="ghost" size="icon" onClick={() => handleDelete(receipt.trackingCode)} title="Delete" disabled={isDeleting === receipt.trackingCode} className="text-destructive hover:bg-destructive/10">
+                              <Button variant="ghost" size="icon" onClick={() => handleDelete(receipt)} title="Delete" className="text-destructive hover:bg-destructive/10">
                                 <Trash2 className="h-4 w-4" />
                               </Button>
                             </div>
