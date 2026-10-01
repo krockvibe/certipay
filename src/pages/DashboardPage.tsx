@@ -260,7 +260,84 @@ export function DashboardPage() {
                   </Link>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
+                <>
+                  {/* Card list on small screens. The table below needs
+                      horizontal scrolling at this width, which hides the
+                      action buttons on a phone. */}
+                  <ul className="md:hidden divide-y divide-border/50">
+                    {filteredReceipts.map((receipt) => (
+                      <li key={receipt.id} className="p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <code className="font-mono text-sm bg-muted px-2 py-1 rounded inline-block">
+                              {receipt.trackingCode}
+                            </code>
+                            <p className="mt-2 font-medium text-foreground truncate">
+                              {receipt.senderName}
+                            </p>
+                            <p className="text-sm text-muted-foreground truncate">
+                              to {receipt.receiverName}
+                            </p>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <p className="font-mono font-medium">
+                              {formatCurrency(receipt.amount, receipt.currency)}
+                            </p>
+                            <Badge
+                              variant={statusConfig[receipt.status as keyof typeof statusConfig]?.color as any || "secondary"}
+                              className="mt-1"
+                            >
+                              {statusConfig[receipt.status as keyof typeof statusConfig]?.label || receipt.status}
+                            </Badge>
+                          </div>
+                        </div>
+
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {formatDate(receipt.dateTime)}
+                        </p>
+
+                        <div className="mt-3 flex items-center gap-1">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => handleView(receipt)}
+                          >
+                            <Eye className="h-4 w-4 mr-1.5" />
+                            View
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="flex-1"
+                            onClick={() => handleEdit(receipt)}
+                          >
+                            <Edit className="h-4 w-4 mr-1.5" />
+                            Edit
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => copyCode(receipt.trackingCode)}
+                            title="Copy code"
+                          >
+                            <Copy className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleDelete(receipt)}
+                            title="Delete"
+                            className="text-destructive hover:bg-destructive/10"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className="hidden md:block overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-border">
@@ -312,6 +389,7 @@ export function DashboardPage() {
                     </tbody>
                   </table>
                 </div>
+                </>
               )}
             </CardContent>
           </Card>

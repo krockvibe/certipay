@@ -84,6 +84,24 @@ export async function sharedReceiptExists(code: string): Promise<boolean> {
  * blobs are written at a deterministic path per code, and codes already present
  * in the shared store are skipped.
  */
+/**
+ * Remove a receipt from the shared store. Without this, deleting locally left the
+ * code resolving on every other device that had already shared it.
+ */
+export async function unpublishReceipt(code: string): Promise<boolean> {
+  if (storeUnavailable) return false;
+
+  try {
+    const res = await fetch(`${API_PATH}?code=${encodeURIComponent(code)}`, {
+      method: "DELETE",
+    });
+    // 404 means it was never published, which is the state we wanted anyway.
+    return res.ok || res.status === 404;
+  } catch {
+    return false;
+  }
+}
+
 export async function backfillReceipts(receipts: ReceiptData[]): Promise<number> {
   if (storeUnavailable || receipts.length === 0) return 0;
 

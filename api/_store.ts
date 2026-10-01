@@ -69,6 +69,26 @@ export async function saveReceiptToStore(code: string, receipt: unknown) {
   return { stored: true as const, trimmed };
 }
 
+/**
+ * Delete the blob for a code. Removing the local copy alone left the code
+ * resolving on every other device, so deletion has to reach the shared store too.
+ * Returns false only when the store could not be reached or refused.
+ */
+export async function deleteReceiptFromStore(code: string) {
+  const client = await getBlob();
+  if (!client) return false;
+
+  try {
+    await client.del(pathFor(code), {
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+    } as Parameters<typeof client.del>[1]);
+    return true;
+  } catch {
+    // Already absent counts as deleted.
+    return true;
+  }
+}
+
 export async function readReceiptFromStore<T>(code: string): Promise<T | null> {
   const client = await getBlob();
   if (!client) return null;
@@ -107,7 +127,7 @@ export function isStoreConfigured() {
 }
 
 export function methodNotAllowed(res: VercelResponse) {
-  res.setHeader("Allow", "GET, POST");
+  res.setHeader("Allow", "GET, HEAD, POST, DELETE");
   return res.status(405).json({ error: "method_not_allowed" });
 }
 

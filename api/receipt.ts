@@ -1,5 +1,12 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { readReceiptFromStore, saveReceiptToStore, isStoreConfigured, methodNotAllowed, setBlobBaseUrl } from "./_store.js";
+import {
+  readReceiptFromStore,
+  saveReceiptToStore,
+  deleteReceiptFromStore,
+  isStoreConfigured,
+  methodNotAllowed,
+  setBlobBaseUrl,
+} from "./_store.js";
 
 const CODE_RE = /^\d{10}$/;
 
@@ -63,6 +70,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(503).json({ error: "store_unavailable" });
     }
     return res.status(200).json({ ok: true, code: normalized.toUpperCase() });
+  }
+
+  if (req.method === "DELETE") {
+    const code = String(req.query.code ?? "").trim();
+    if (!CODE_RE.test(code)) {
+      return res.status(400).json({ error: "invalid_code" });
+    }
+    // Deleting locally is not enough: anyone sharing this code must stop
+    // resolving it, so remove the shared copy as well.
+    const deleted = await deleteReceiptFromStore(code);
+    if (!deleted) {
+      return res.status(503).json({ error: "store_unavailable" });
+    }
+    return res.status(200).json({ ok: true, code: code.toUpperCase() });
   }
 
   return methodNotAllowed(res);

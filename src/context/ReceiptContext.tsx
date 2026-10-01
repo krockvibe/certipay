@@ -2,7 +2,7 @@ import { createContext, useContext, useReducer, useRef, type ReactNode, useEffec
 import type { ReceiptData, ReceiptFormData } from "@/types/receipt";
 import { defaultFormData } from "@/types/receipt";
 import { generateTrackingCode, generateTransactionId } from "@/lib/utils";
-import { publishReceipt, backfillReceipts } from "@/lib/receiptApi";
+import { publishReceipt, unpublishReceipt, backfillReceipts } from "@/lib/receiptApi";
 
 interface ReceiptState {
   receipts: ReceiptData[];
@@ -228,9 +228,15 @@ export function ReceiptProvider({ children }: { children: ReactNode }) {
   };
 
   const deleteReceipt = (id: string) => {
+    const target = state.receipts.find((r) => r.id === id);
     dispatch({ type: "DELETE_RECEIPT", payload: id });
     if (state.editingId === id) {
       dispatch({ type: "SET_EDITING", payload: null });
+    }
+    // Also remove the shared copy. Otherwise anyone still holding this code
+    // keeps resolving the receipt after it has been deleted here.
+    if (target?.trackingCode) {
+      void unpublishReceipt(target.trackingCode);
     }
   };
 

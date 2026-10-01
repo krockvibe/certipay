@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MobileNav } from "@/components/MobileNav";
+import { useAuth } from "@/context/AuthContext";
 
 const features = [
   {
@@ -52,6 +53,7 @@ const features = [
 ];
 
 export function HomePage() {
+  const { isAuthenticated } = useAuth();
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -74,6 +76,21 @@ export function HomePage() {
               <Link to="/dashboard" className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted">
                 Dashboard
               </Link>
+              {/* Auth links only when signed out; signed-in users already have
+                  the dashboard, and the mobile drawer carries these. */}
+              {!isAuthenticated && (
+                <>
+                  <Link
+                    to="/signin"
+                    className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted"
+                  >
+                    Sign In
+                  </Link>
+                  <Link to="/signup">
+                    <Button size="sm">Sign Up</Button>
+                  </Link>
+                </>
+              )}
             </nav>
             <div className="flex items-center gap-2 md:hidden">
               <MobileNav />

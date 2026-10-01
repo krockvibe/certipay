@@ -61,7 +61,25 @@ export function TrackingReceiptPreview({ data, className }: TrackingReceiptPrevi
     <div className={`tracking-card ${className || ""}`} style={{ width: "min(100%, 426px)" }}>
       {/* HEADER */}
       <header className="tracking-header">
-        <div className="brand">CertiPay</div>
+        {/* An uploaded bank logo replaces the CertiPay wordmark. It is capped to
+            the height and width of the text it stands in for, so the header does
+            not shift when a logo is added. */}
+        {logoSrc ? (
+          <img
+            src={logoSrc}
+            alt={bankName}
+            className="brand-image"
+            style={{
+              height: "20px",
+              maxWidth: "96px",
+              width: "auto",
+              objectFit: "contain",
+              objectPosition: "left center",
+            }}
+          />
+        ) : (
+          <div className="brand">CertiPay</div>
+        )}
         <svg className="email-icon" viewBox="0 0 24 24" aria-label="Transfer receipt">
           <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" />
           <path d="M4 7l8 6 8-6" stroke="currentColor" strokeWidth="1.8" fill="none" />
