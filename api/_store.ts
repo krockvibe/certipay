@@ -1,51 +1,113 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { VercelResponse } from "@vercel/node";
 
 /**
- * Shared receipt store for the tracking API.
+ * Shared receipt store built on Vercel Blob.
  *
- * Primary backing is Vercel KV so a 10-digit code resolves on any device. When
- * the KV env vars are absent (local dev, or a Vercel project without a store
- * attached) we report that explicitly and the client falls back to its own
- * localStorage copy, which keeps the app usable instead of failing outright.
+ * One JSON blob per tracking code, written at a deterministic pathname so a code
+ * resolves from any device. Blob writes are authenticated through the function's
+ * OIDC credential, so only this API can create or overwrite receipts; reads are
+ * open, which matches the sharing model where holding the 10-digit code is what
+ * grants access.
  */
 
-const HAS_KV =
-  Boolean(process.env.KV_REST_API_URL) && Boolean(process.env.KV_REST_API_TOKEN);
+let blob: typeof import("@vercel/blob") | null = null;
 
-let kv: { get<T>(key: string): Promise<T | null>; set(key: string, value: unknown, opts?: { ex?: number }): Promise<unknown> } | null = null;
-
-async function getKv() {
-  if (!HAS_KV) return null;
-  if (!kv) {
-    const mod = await import("@vercel/kv");
-    kv = mod.kv as unknown as typeof kv;
+async function getBlob() {
+  if (!process.env.BLOB_STORE_ID) return null;
+  if (!blob) {
+    blob = await import("@vercel/blob");
   }
-  return kv;
+  return blob;
 }
 
-const keyFor = (code: string) => `receipt:${code.toUpperCase()}`;
+const pathFor = (code: string) => `receipts/${code.toUpperCase()}.json`;
 
-// Receipts carry base64 image data URLs, so keep the TTL generous.
-const TTL_SECONDS = 60 * 60 * 24 * 365;
+/**
+ * Public base URL for the store. setBlobBaseUrl lets the project env supply it so
+ * a lookup can fetch the blob directly, which avoids depending on getDownloadUrl
+ * resolving inside the function runtime.
+ */
+let blobBaseUrl = "";
+export function setBlobBaseUrl(url: string) {
+  blobBaseUrl = url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+}
+
+/**
+ * Base64 image data URLs can be hundreds of kilobytes. Cap what we persist so a
+ * save cannot fail on size, and flag it so the UI can say images are local-only.
+ */
+const MAX_SERIALIZED_BYTES = 180_000;
+
+function trimToSize(receipt: unknown) {
+  const serialized = JSON.stringify(receipt);
+  if (serialized.length <= MAX_SERIALIZED_BYTES) {
+    return { payload: receipt, trimmed: false };
+  }
+
+  const clone = { ...(receipt as Record<string, unknown>) };
+  clone.logoUrl = "";
+  clone.bankLogoUrl = "";
+  clone.receiptImageUrl = "";
+  clone.sharedWithoutImages = true;
+  return { payload: clone, trimmed: true };
+}
 
 export async function saveReceiptToStore(code: string, receipt: unknown) {
-  const client = await getKv();
-  if (!client) return { stored: false as const, reason: "kv_unavailable" as const };
-  await client.set(keyFor(code), receipt, { ex: TTL_SECONDS });
-  return { stored: true as const };
+  const client = await getBlob();
+  if (!client) return { stored: false as const, reason: "store_unavailable" as const };
+
+  const { payload, trimmed } = trimToSize(receipt);
+
+  await client.put(pathFor(code), JSON.stringify(payload), {
+    access: "public",
+    contentType: "application/json",
+    // Deterministic path, so a re-publish overwrites the same code in place.
+    addRandomSuffix: false,
+    token: process.env.BLOB_READ_WRITE_TOKEN,
+  } as Parameters<typeof client.put>[2]);
+
+  return { stored: true as const, trimmed };
 }
 
 export async function readReceiptFromStore<T>(code: string): Promise<T | null> {
-  const client = await getKv();
+  const client = await getBlob();
   if (!client) return null;
-  return (await client.get<T>(keyFor(code))) ?? null;
+
+ const pathname = pathFor(code);
+
+  // Prefer the store's public base URL. getDownloadUrl() is not reliably able to
+  // resolve a blob from inside the function runtime, but the public CDN URL always
+  // serves the same object.
+  if (blobBaseUrl) {
+    try {
+      const res = await fetch(`https://${blobBaseUrl}/${pathname}`);
+      if (res.ok) return (await res.json()) as T;
+      return null;
+    } catch {
+      // Fall through to the SDK lookup below.
+    }
+  }
+
+  try {
+    const url = await client.getDownloadUrl(pathname);
+    if (!url) return null;
+
+    const res = await fetch(url);
+    if (!res.ok) return null;
+
+    return (await res.json()) as T;
+  } catch {
+    // A missing blob throws; treat it as "no receipt" rather than a 500.
+    return null;
+  }
 }
 
-export function isKvConfigured() {
-  return HAS_KV;
+export function isStoreConfigured() {
+  return Boolean(process.env.BLOB_STORE_ID);
 }
 
 export function methodNotAllowed(res: VercelResponse) {
   res.setHeader("Allow", "GET, POST");
   return res.status(405).json({ error: "method_not_allowed" });
 }
+

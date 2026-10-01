@@ -1,17 +1,21 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
-import { readReceiptFromStore, saveReceiptToStore, isKvConfigured, methodNotAllowed } from "./_store.js";
+import { readReceiptFromStore, saveReceiptToStore, isStoreConfigured, methodNotAllowed, setBlobBaseUrl } from "./_store.js";
 
 const CODE_RE = /^\d{10}$/;
 
 /**
  * GET  /api/receipt?code=1234567890  -> the receipt for that code
- * POST /api/receipt  { code, receipt } -> upsert a receipt by code
+ * POST /api/receipt  { code, receipt } -> upsert a receipt under that code
  *
- * The tracking page calls GET to resolve a code from any device. Receipt writes
- * call POST so a code shared with someone else actually resolves for them.
+ * Lets a 10-digit code resolve on any device rather than only the browser that
+ * created the receipt.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (!isKvConfigured()) {
+  if (process.env.BLOB_BASE_URL) {
+    setBlobBaseUrl(process.env.BLOB_BASE_URL);
+  }
+
+  if (!isStoreConfigured()) {
     return res.status(503).json({
       error: "store_unavailable",
       message: "Shared receipt store is not configured. Codes resolve in this browser only.",
