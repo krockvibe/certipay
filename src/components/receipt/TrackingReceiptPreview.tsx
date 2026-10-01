@@ -51,7 +51,7 @@ export function TrackingReceiptPreview({ data, className, isDemo = true }: Track
     <div className={`tracking-card ${className || ""}`} style={{ width: "min(100%, 426px)" }}>
       {/* HEADER */}
       <header className="tracking-header">
-        <div className="brand">CertiPay Demo</div>
+        <div className="brand">CertiPay</div>
         <svg className="email-icon" viewBox="0 0 24 24" aria-label="Demo receipt">
           <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" />
           <path d="M4 7l8 6 8-6" stroke="currentColor" strokeWidth="1.8" fill="none" />
