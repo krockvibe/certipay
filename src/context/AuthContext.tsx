@@ -49,8 +49,28 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 const USERS_STORAGE_KEY = "certipay_users";
 const CURRENT_USER_KEY = "certipay_current_user";
 
+type StoredUserRecord = { user: User; passwordHash: string; legacyPassword?: string };
+
+// Salt keeps identical passwords from producing identical digests.
+function getSalt(): string {
+  let salt = localStorage.getItem("certipay_salt");
+  if (!salt) {
+    const bytes = new Uint8Array(16);
+    crypto.getRandomValues(bytes);
+    salt = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+    localStorage.setItem("certipay_salt", salt);
+  }
+  return salt;
+}
+
+async function hashPassword(password: string): Promise<string> {
+  const data = new TextEncoder().encode(`${getSalt()}:${password}`);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
 // Helper functions for user management
-function getStoredUsers(): Record<string, { user: User; password: string }> {
+function getStoredUsers(): Record<string, StoredUserRecord> {
   try {
     const stored = localStorage.getItem(USERS_STORAGE_KEY);
     return stored ? JSON.parse(stored) : {};
@@ -59,7 +79,7 @@ function getStoredUsers(): Record<string, { user: User; password: string }> {
   }
 }
 
-function saveUsers(users: Record<string, { user: User; password: string }>) {
+function saveUsers(users: Record<string, StoredUserRecord>) {
   localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
 }
 
@@ -111,7 +131,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       createdAt: new Date().toISOString(),
     };
 
-    users[data.email] = { user: newUser, password: data.password };
+    users[data.email] = { user: newUser, passwordHash: await hashPassword(data.password) };
     saveUsers(users);
 
     // Auto sign in after signup
@@ -129,7 +149,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: "Invalid email or password" };
     }
 
-    if (userRecord.password !== data.password) {
+    const digest = await hashPassword(data.password);
+
+    // Accept records written before hashing was introduced, then upgrade
+    // them to a digest so plaintext is not left sitting in localStorage.
+    if (userRecord.legacyPassword) {
+      if (userRecord.legacyPassword !== data.password) {
+        return { success: false, error: "Invalid email or password" };
+      }
+      userRecord.passwordHash = digest;
+      delete userRecord.legacyPassword;
+      saveUsers(users);
+    } else if (userRecord.passwordHash !== digest) {
       return { success: false, error: "Invalid email or password" };
     }
 

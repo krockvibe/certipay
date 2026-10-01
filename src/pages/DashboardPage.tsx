@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Search, Edit, Trash2, Copy, Eye, LogOut, ChevronLeft, Shield, DollarSign, Clock, CreditCard, FileText, CheckCircle, XCircle, Loader2, X, AlertCircle } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Copy, Eye, LogOut, ChevronLeft, Shield, DollarSign, Clock, FileText, CheckCircle, XCircle, Loader2, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Toast, ToastProvider, ToastViewport, ToastTitle, ToastDescription, ToastClose } from "@/components/ui/toast";
 import { useToast } from "@/hooks/useToast";
 import { useAuth } from "@/context/AuthContext";
@@ -45,7 +44,7 @@ function StatCard({ title, value, icon: Icon, color }: { title: string; value: s
 export function DashboardPage() {
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
-  const { receipts, getReceiptByCode, deleteReceipt, startEditing } = useReceipts();
+  const { receipts, deleteReceipt, startEditing } = useReceipts();
   const { toasts, toast, dismiss } = useToast();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -53,7 +52,12 @@ export function DashboardPage() {
   const [selectedReceipt, setSelectedReceipt] = useState<ReceiptData | null>(null);
   const [viewMode, setViewMode] = useState<"receipt" | "tracking">("tracking");
 
-  const userReceipts = receipts.filter((r) => r.createdBy === user?.email || !r.createdBy);
+  // Only show receipts that belong to the signed-in user. Legacy receipts
+  // saved before ownership was tracked have no createdBy, so they are only
+  // surfaced to signed-out visitors rather than leaking into every account.
+  const userReceipts = user
+    ? receipts.filter((r) => r.createdBy === user.email)
+    : receipts.filter((r) => !r.createdBy);
   const sortedReceipts = [...userReceipts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
   const filteredReceipts = sortedReceipts.filter((receipt) => {

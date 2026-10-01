@@ -1,19 +1,15 @@
 import { useState, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Copy, Check, AlertTriangle, Loader2, DollarSign, Eye, Edit, FileText } from "lucide-react";
+import { ArrowLeft, Copy, Check, AlertTriangle, Loader2, DollarSign, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Toast, ToastProvider, ToastViewport, ToastTitle, ToastDescription, ToastClose } from "@/components/ui/toast";
 import { useToast } from "@/hooks/useToast";
 import { useReceipts } from "@/context/ReceiptContext";
 import { useAuth } from "@/context/AuthContext";
-import type { ReceiptFormData } from "@/types/receipt";
-import { defaultFormData } from "@/types/receipt";
 import { generateTrackingCode } from "@/lib/utils";
 import {
-  FormSection,
   PartiesSection,
   TransactionSection,
   MessagingSection,
@@ -21,41 +17,14 @@ import {
   BrandingSection,
   GenerateButton,
 } from "@/components/receipt/CreateFormSections";
-import { ReceiptPreview } from "@/components/receipt/ReceiptPreview";
 import { TrackingReceiptPreview } from "@/components/receipt/TrackingReceiptPreview";
 import { useMultipleImageUploads } from "@/hooks/useImageUpload";
 
-const previewData: ReceiptFormData = {
-  senderName: "John Doe",
-  receiverName: "Jane Smith",
-  bankName: "CHASE",
-  accountNumber: "**** **** **** 1234",
-  amount: "70000.00",
-  currency: "USD",
-  status: "processing",
-  dateTime: new Date().toISOString().slice(0, 16),
-  paymentMethod: "Bank Transfer",
-  progress: "80",
-  feeAmount: "7000",
-  feeStatus: "unresolved",
-  billingWarning: "",
-  pendingMessage: "We are processing your transfer.",
-  maturityMessage: "We apologize for any inconvenience. Thank you for selecting our bank for your financial needs.",
-  customNotes: "",
-  cryptoWallet: "",
-  footerText: defaultFormData.footerText,
-  backgroundColor: "#f8fafc",
-  brandColor: "#1e40af",
-  logoFile: null,
-  bankLogoFile: null,
-  receiptImageFile: null,
-};
-
 export function CreatePage() {
   const navigate = useNavigate();
-  const { currentForm, updateForm, resetForm, saveReceipt, updateReceipt, editingId, isLoading } = useReceipts();
+  const { currentForm, updateForm, resetForm, saveReceipt, updateReceipt, editingId } = useReceipts();
   const { user } = useAuth();
-  const { logo, bankLogo, receiptImage, uploadAll, clearAll } = useMultipleImageUploads();
+  const { uploadAll, clearAll } = useMultipleImageUploads();
   const { toasts, toast, dismiss } = useToast();
   const [generatedReceipt, setGeneratedReceipt] = useState<{ code: string; data: any } | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -108,7 +77,7 @@ export function CreatePage() {
       resetForm();
       updateForm({ trackingCode: generateTrackingCode() });
       clearAll();
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to generate receipt. Please try again.",
@@ -117,7 +86,7 @@ export function CreatePage() {
     } finally {
       setIsGenerating(false);
     }
-  }, [currentForm, uploadAll, saveReceipt, updateReceipt, editingId, toast, resetForm, updateForm, clearAll, isGenerating]);
+  }, [currentForm, uploadAll, saveReceipt, updateReceipt, editingId, toast, resetForm, updateForm, clearAll, isGenerating, user]);
 
   const copyCode = useCallback((code: string) => {
     navigator.clipboard.writeText(code);

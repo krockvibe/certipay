@@ -7,6 +7,7 @@ import { TrackPage } from "@/pages/TrackPage";
 import { SignInPage } from "@/pages/SignInPage";
 import { SignUpPage } from "@/pages/SignUpPage";
 import { DashboardPage } from "@/pages/DashboardPage";
+import { NotFoundPage } from "@/pages/NotFoundPage";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
@@ -54,6 +55,7 @@ function AppRoutes() {
         path="/dashboard"
         element={<ProtectedRoute><DashboardPage /></ProtectedRoute>}
       />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
   );
 }

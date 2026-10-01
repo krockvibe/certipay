@@ -130,6 +130,7 @@ export function ReceiptProvider({ children }: { children: ReactNode }) {
       bankLogoUrl,
       receiptImageUrl,
       createdBy: userEmail,
+      isAnonymous: !userEmail,
     };
     dispatch({ type: "ADD_RECEIPT", payload: receipt });
     return receipt;

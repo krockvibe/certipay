@@ -1,17 +1,13 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Link, useSearchParams, useNavigate } from "react-router-dom";
-import { Search, AlertCircle, Loader2, DollarSign, MessageSquare } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
+import { Search, AlertCircle, Loader2, DollarSign } from "lucide-react";
 import { Toast, ToastProvider, ToastViewport, ToastTitle, ToastDescription, ToastClose } from "@/components/ui/toast";
 import { useToast } from "@/hooks/useToast";
 import { useReceipts } from "@/context/ReceiptContext";
 import { TrackingReceiptPreview } from "@/components/receipt/TrackingReceiptPreview";
-import { formatCurrency, formatDate } from "@/lib/utils";
 
 export function TrackPage() {
   const [searchParams, setSearchParams] = useSearchParams();
-  const navigate = useNavigate();
   const { getReceiptByCode } = useReceipts();
   const { toasts, toast, dismiss } = useToast();
 
@@ -19,15 +15,6 @@ export function TrackPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [receipt, setReceipt] = useState<any | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  // Initialize from URL
-  useEffect(() => {
-    const urlCode = searchParams.get("code");
-    if (urlCode) {
-      setCode(urlCode.toUpperCase());
-      handleSearch(urlCode.toUpperCase());
-    }
-  }, [searchParams]);
 
   const handleSearch = useCallback(async (searchCode: string) => {
     const trimmed = searchCode.trim();
@@ -61,26 +48,23 @@ export function TrackPage() {
     }
   }, [getReceiptByCode, setSearchParams, toast]);
 
+  // Initialize from the ?code= query param. Declared after handleSearch so
+  // the callback is initialized before the effect that references it.
+  useEffect(() => {
+    const urlCode = searchParams.get("code");
+    if (!urlCode) return;
+    const normalized = urlCode.trim().toUpperCase();
+    setCode(normalized);
+    void handleSearch(normalized);
+    // handleSearch is stable for the inputs it reads; re-running on every
+    // change would re-trigger the search and loop via setSearchParams.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     handleSearch(code);
   };
-
-  const handleNewSearch = () => {
-    setCode("");
-    setReceipt(null);
-    setError(null);
-    setSearchParams({}, { replace: true });
-  };
-
-  const copyCode = useCallback((trackingCode: string) => {
-    navigator.clipboard.writeText(trackingCode);
-    toast({
-      title: "Copied!",
-      description: "Tracking code copied to clipboard",
-      variant: "success",
-    });
-  }, [toast]);
 
   return (
     <ToastProvider>

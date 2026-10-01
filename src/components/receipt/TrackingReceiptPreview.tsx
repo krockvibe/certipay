@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import type { ReceiptData, ReceiptFormData } from "@/types/receipt";
 import { formatCurrency, generateTrackingCode } from "@/lib/utils";
 
@@ -41,11 +41,29 @@ export function TrackingReceiptPreview({ data, className, isDemo = true }: Track
   const [fallbackCode] = useState(() => generateTrackingCode());
   const receiptCode = data.trackingCode || fallbackCode;
 
+  // Object URLs must be created once per file and revoked afterwards,
+  // otherwise each render leaks a new blob.
+  const bankLogoFile = (data as ReceiptFormData).bankLogoFile;
+  const bankLogoUrl = "bankLogoUrl" in data ? (data as ReceiptData).bankLogoUrl : "";
+
+  const [objectUrl, setObjectUrl] = useState("");
+
+  useEffect(() => {
+    if (!bankLogoFile) {
+      setObjectUrl("");
+      return;
+    }
+    const url = URL.createObjectURL(bankLogoFile);
+    setObjectUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [bankLogoFile]);
+
+  const logoSrc = objectUrl || bankLogoUrl;
+
   const feeStatus = statusColors[data.feeStatus as keyof typeof statusColors] || statusColors.pending;
   const transferStatus = statusColors[data.status as keyof typeof statusColors] || statusColors.pending;
   const maturityStatus = statusColors.successful;
 
-  const isComplete = progress >= 100;
 
   return (
     <div className={`tracking-card ${className || ""}`} style={{ width: "min(100%, 426px)" }}>
@@ -158,30 +176,21 @@ export function TrackingReceiptPreview({ data, className, isDemo = true }: Track
         {/* FOOTER */}
         <footer className="receipt-footer">
           <span className="powered">Powered by Secured Transfer</span>
-          {(() => {
-            let logoSrc = "";
-            const formData = data as ReceiptFormData;
-            if (formData.bankLogoFile) {
-              logoSrc = URL.createObjectURL(formData.bankLogoFile);
-            } else if ("bankLogoUrl" in data && data.bankLogoUrl) {
-              logoSrc = data.bankLogoUrl;
-            }
-            return logoSrc ? (
-              <img
-                src={logoSrc}
-                alt={`${data.bankName || "Bank"} logo`}
-                className="bank-logo-footer"
-                style={{
-                  height: "24px",
-                  maxWidth: "120px",
-                  width: "auto",
-                  objectFit: "contain",
-                }}
-              />
-            ) : (
-              <span className="visa-badge">VISA</span>
-            );
-          })()}
+          {logoSrc ? (
+            <img
+              src={logoSrc}
+              alt={`${data.bankName || "Bank"} logo`}
+              className="bank-logo-footer"
+              style={{
+                height: "24px",
+                maxWidth: "120px",
+                width: "auto",
+                objectFit: "contain",
+              }}
+            />
+          ) : (
+            <span className="visa-badge">VISA</span>
+          )}
         </footer>
       </section>
 
