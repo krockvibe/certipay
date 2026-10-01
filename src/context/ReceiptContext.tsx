@@ -49,6 +49,8 @@ function receiptReducer(state: ReceiptState, action: ReceiptAction): ReceiptStat
       return { ...state, currentForm: defaultFormData, editingId: null };
     case "SET_LOADING":
       return { ...state, isLoading: action.payload };
+    case "SET_EDITING":
+      return { ...state, editingId: action.payload };
     default:
       return state;
   }

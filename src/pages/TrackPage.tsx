@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Search, AlertCircle, Loader2, DollarSign } from "lucide-react";
+import { MobileNav } from "@/components/MobileNav";
 import { Toast, ToastProvider, ToastViewport, ToastTitle, ToastDescription, ToastClose } from "@/components/ui/toast";
 import { useToast } from "@/hooks/useToast";
 import { useReceipts } from "@/context/ReceiptContext";
@@ -70,13 +71,14 @@ export function TrackPage() {
     <ToastProvider>
       <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
         {/* Brand Header */}
-        <header className="px-4 py-2 flex items-center justify-center max-w-3xl mx-auto">
-          <div className="flex items-center gap-2">
+        <header className="px-4 py-2 flex items-center justify-between max-w-3xl mx-auto">
+          <Link to="/" className="flex items-center gap-2">
             <div className="size-8 rounded-full bg-[#078BC5] grid place-items-center text-white">
               <DollarSign className="h-5 w-5 text-white" />
             </div>
             <span className="text-xl font-bold text-[#07111F]">CertiPay</span>
-          </div>
+          </Link>
+          <MobileNav />
         </header>
 
         {/* Main Content */}

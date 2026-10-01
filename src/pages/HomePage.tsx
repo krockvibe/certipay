@@ -4,6 +4,7 @@ import { DollarSign, ArrowRight, FileText, Search, CreditCard, Clock, Globe, Loc
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { MobileNav } from "@/components/MobileNav";
 
 const features = [
   {
@@ -70,11 +71,12 @@ export function HomePage() {
               <Link to="/track" className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted">
                 Track Transfer
               </Link>
+              <Link to="/dashboard" className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted">
+                Dashboard
+              </Link>
             </nav>
             <div className="flex items-center gap-2 md:hidden">
-              <Link to="/create" className="px-4 py-2 bg-primary text-primary-foreground rounded-lg text-sm font-medium">
-                Get Started
-              </Link>
+              <MobileNav />
             </div>
           </div>
         </div>

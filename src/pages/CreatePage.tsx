@@ -18,6 +18,7 @@ import {
   GenerateButton,
 } from "@/components/receipt/CreateFormSections";
 import { TrackingReceiptPreview } from "@/components/receipt/TrackingReceiptPreview";
+import { MobileNav } from "@/components/MobileNav";
 import { useMultipleImageUploads } from "@/hooks/useImageUpload";
 
 export function CreatePage() {
@@ -130,9 +131,10 @@ export function CreatePage() {
                 </nav>
               </div>
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" asChild>
+                <Button variant="ghost" size="sm" asChild className="hidden md:inline-flex">
                   <Link to="/track">Track a Transfer</Link>
                 </Button>
+                <MobileNav />
               </div>
             </div>
           </div>

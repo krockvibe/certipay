@@ -14,6 +14,7 @@ import { TrackingReceiptPreview } from "@/components/receipt/TrackingReceiptPrev
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { ReceiptData } from "@/types/receipt";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { MobileNav } from "@/components/MobileNav";
 
 const statusConfig = {
   pending: { label: "Pending", color: "warning", icon: Clock },
@@ -169,10 +170,11 @@ export function DashboardPage() {
                 </Link>
               </nav>
               <div className="flex items-center gap-3">
-                <span className="hidden sm:block text-sm text-muted-foreground">{user?.name}</span>
-                <Button variant="ghost" size="icon" onClick={handleSignOut} className="text-muted-foreground hover:text-foreground">
+                <span className="hidden md:block text-sm text-muted-foreground">{user?.name}</span>
+                <Button variant="ghost" size="icon" onClick={handleSignOut} className="hidden md:inline-flex text-muted-foreground hover:text-foreground">
                   <LogOut className="h-5 w-5" />
                 </Button>
+                <MobileNav />
               </div>
             </div>
           </div>
