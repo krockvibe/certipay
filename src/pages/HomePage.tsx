@@ -6,7 +6,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MobileNav } from "@/components/MobileNav";
 import { useAuth } from "@/context/AuthContext";
-import { BrandMark } from "@/components/BrandMark";
 
 const features = [
   {
@@ -62,7 +61,10 @@ export function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <Link to="/" className="flex items-center gap-2">
-              <BrandMark />
+              <div className="p-2 bg-primary rounded-lg">
+                <DollarSign className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <span className="font-display text-xl font-bold text-foreground">CertiPay</span>
             </Link>
             <nav className="hidden md:flex items-center gap-1">
               <Link to="/create" className="px-3 py-2 rounded-lg text-sm font-medium text-primary bg-primary/10">
@@ -236,7 +238,10 @@ export function HomePage() {
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div className="md:col-span-2">
 <Link to="/" className="flex items-center gap-2 mb-4">
-              <BrandMark />
+              <div className="p-2 bg-primary rounded-lg">
+                <DollarSign className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <span className="font-display text-xl font-bold text-foreground">CertiPay</span>
             </Link>
               <p className="text-muted-foreground max-w-sm">
                 Secure transfer receipt generation and tracking. Built with modern technology for reliable financial transactions.

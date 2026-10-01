@@ -15,7 +15,6 @@ import { formatCurrency, formatDate } from "@/lib/utils";
 import type { ReceiptData } from "@/types/receipt";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MobileNav } from "@/components/MobileNav";
-import { BrandMark } from "@/components/BrandMark";
 
 const statusConfig = {
   pending: { label: "Pending", color: "warning", icon: Clock },
@@ -151,7 +150,10 @@ export function DashboardPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between h-16">
               <Link to="/" className="flex items-center gap-2">
-                <BrandMark />
+                <div className="p-2 bg-primary rounded-lg">
+                  <DollarSign className="h-5 w-5 text-primary-foreground" />
+                </div>
+                <span className="font-display text-xl font-bold text-foreground">CertiPay</span>
               </Link>
               <nav className="hidden md:flex items-center gap-4">
                 <Link to="/create" className="px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-muted">

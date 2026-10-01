@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Toast, ToastProvider, ToastViewport, ToastTitle, ToastDescription, ToastClose } from "@/components/ui/toast";
 import { useToast } from "@/hooks/useToast";
 import { useAuth } from "@/context/AuthContext";
-import { BrandMark } from "@/components/BrandMark";
 
 export function SignInPage() {
   const navigate = useNavigate();
@@ -51,7 +50,10 @@ export function SignInPage() {
         <Card className="w-full max-w-md animate-fade-in">
           <CardHeader className="text-center">
             <Link to="/" className="inline-flex items-center gap-2 mb-4">
-              <BrandMark />
+              <div className="p-2 bg-primary rounded-lg">
+                <DollarSign className="h-5 w-5 text-primary-foreground" />
+              </div>
+              <span className="font-display text-xl font-bold text-foreground">CertiPay</span>
             </Link>
             <CardTitle className="text-2xl">Sign In</CardTitle>
             <CardDescription>Enter your credentials to access your dashboard</CardDescription>
@@ -144,4 +146,4 @@ export function SignInPage() {
 }
 
 // Need to import missing icons
-import { Loader2 } from "lucide-react";
+import { DollarSign, Loader2 } from "lucide-react";
