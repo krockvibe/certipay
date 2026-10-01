@@ -332,7 +332,7 @@ export function DashboardPage() {
               </div>
               <div className="p-6">
                 {viewMode === "tracking" ? (
-                  <TrackingReceiptPreview data={selectedReceipt} isDemo={false} />
+                  <TrackingReceiptPreview data={selectedReceipt} />
                 ) : (
                   <ReceiptPreview data={selectedReceipt} />
                 )}

@@ -211,7 +211,7 @@ export function CreatePage() {
                   </CardHeader>
                   <CardContent className="p-0">
                     <div className="aspect-[4/3] relative">
-                      <TrackingReceiptPreview data={currentForm} isDemo={true} />
+                      <TrackingReceiptPreview data={currentForm} />
                     </div>
                   </CardContent>
                 </Card>

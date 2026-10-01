@@ -45,7 +45,7 @@ function authReducer(state: AuthState, action: AuthAction): AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Demo users storage key
+// Users storage key
 const USERS_STORAGE_KEY = "certipay_users";
 const CURRENT_USER_KEY = "certipay_current_user";
 

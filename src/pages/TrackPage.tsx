@@ -149,7 +149,7 @@ export function TrackPage() {
           {receipt && (
             <section className="w-full max-w-md pt-8">
               <div className="flex justify-center">
-                <TrackingReceiptPreview data={receipt} isDemo={false} />
+                <TrackingReceiptPreview data={receipt} />
               </div>
 
               {/* Track Another Button */}

@@ -1,11 +1,10 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import type { ReceiptData, ReceiptFormData } from "@/types/receipt";
 import { formatCurrency, generateTrackingCode } from "@/lib/utils";
 
 interface TrackingReceiptPreviewProps {
   data: ReceiptData | ReceiptFormData;
   className?: string;
-  isDemo?: boolean;
 }
 
 const statusColors = {
@@ -16,14 +15,7 @@ const statusColors = {
   reversed: { badge: "bg-gray-100 text-gray-800", dot: "bg-gray-500" },
 };
 
-const feeStatusColors = {
-  unresolved: { badge: "bg-yellow-100 text-yellow-800", dot: "bg-yellow-500" },
-  pending: { badge: "bg-yellow-100 text-yellow-800", dot: "bg-yellow-500" },
-  paid: { badge: "bg-green-100 text-green-800", dot: "bg-green-500" },
-  waived: { badge: "bg-gray-100 text-gray-800", dot: "bg-gray-500" },
-};
-
-export function TrackingReceiptPreview({ data, className, isDemo = true }: TrackingReceiptPreviewProps) {
+export function TrackingReceiptPreview({ data, className }: TrackingReceiptPreviewProps) {
   const amount = typeof data.amount === "string" ? parseFloat(data.amount) : (data.amount || 0);
   const money = formatCurrency(amount, data.currency || "USD");
   const progress = typeof data.progress === "string" ? parseInt(data.progress) : (data.progress || 0);
@@ -70,7 +62,7 @@ export function TrackingReceiptPreview({ data, className, isDemo = true }: Track
       {/* HEADER */}
       <header className="tracking-header">
         <div className="brand">CertiPay</div>
-        <svg className="email-icon" viewBox="0 0 24 24" aria-label="Demo receipt">
+        <svg className="email-icon" viewBox="0 0 24 24" aria-label="Transfer receipt">
           <rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" strokeWidth="1.8" fill="none" />
           <path d="M4 7l8 6 8-6" stroke="currentColor" strokeWidth="1.8" fill="none" />
         </svg>
@@ -85,10 +77,6 @@ export function TrackingReceiptPreview({ data, className, isDemo = true }: Track
 
       {/* RECEIPT */}
       <section className="receipt">
-        {isDemo && (
-          <div className="demo-top">DEMO / TEST RECEIPT</div>
-        )}
-
         {/* TRANSACTION HEADER */}
         <div className="transaction-header">
           <div className="transaction-title">
@@ -147,7 +135,7 @@ export function TrackingReceiptPreview({ data, className, isDemo = true }: Track
             <span className="status-marker marker-red"></span>
             <div className="status-content">
               <div className="status-title">Maturity date</div>
-              <div className="status-description">{data.maturityMessage || "We apologize for any inconvenience. Thank you for selecting our demo environment for testing."}</div>
+              <div className="status-description">{data.maturityMessage || "We apologize for any inconvenience. Thank you for your patience."}</div>
             </div>
             <span className={`status-badge ${maturityStatus.badge}`}>Completed</span>
           </div>
@@ -157,7 +145,7 @@ export function TrackingReceiptPreview({ data, className, isDemo = true }: Track
         <div className="metadata">
           <div>
             <div className="meta-label">Transaction ID</div>
-            <div className="meta-value mono">{data.transactionId || "TRX-DEMO-463749374"}</div>
+            <div className="meta-value mono">{data.transactionId || "TRX-463749374"}</div>
           </div>
           <div>
             <div className="meta-label">Account</div>

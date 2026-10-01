@@ -112,7 +112,7 @@ export const defaultFormData: ReceiptFormData = {
   receiptImageFile: null,
 };
 
-export const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "CNY", "INR", "BRL"];
+export const CURRENCIES = ["USD", "EUR", "GBP", "CAD", "AUD", "JPY", "CHF", "CNY", "INR", "BRL", "ZAR"];
 export const PAYMENT_METHODS = ["Bank Transfer", "Wire Transfer", "ACH", "SWIFT", "SEPA", "Crypto", "Card", "Cash"];
 export const STATUSES = ["pending", "processing", "successful", "failed", "reversed"] as const;
 export const FEE_STATUSES = ["unresolved", "pending", "paid", "waived"] as const;

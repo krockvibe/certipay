@@ -1,12 +1,11 @@
-# CertiPay (demo)
+# CertiPay
 
-A demonstration web app for creating and tracking transfer receipts. Built with
+A web app for creating and tracking transfer receipts. Built with
 React, TypeScript, Vite and Tailwind CSS.
 
-> **This is a demo project, not a payment service.** No money moves, no funds are
-> held, and no licences are held. All data lives in your browser's `localStorage`.
-> See [Not a real service](#not-a-real-service) before using this anywhere
-> customer-facing.
+> **No money moves and no funds are held.** All data lives in the browser's
+> `localStorage`. See [Not a real service](#not-a-real-service) before using this
+> anywhere customer-facing.
 
 ## Features
 
