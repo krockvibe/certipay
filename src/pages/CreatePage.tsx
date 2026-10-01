@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Copy, Check, AlertTriangle, Loader2, DollarSign, Eye } from "lucide-react";
+import { ArrowLeft, Copy, Check, AlertTriangle, Loader2, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ import {
 import { TrackingReceiptPreview } from "@/components/receipt/TrackingReceiptPreview";
 import { MobileNav } from "@/components/MobileNav";
 import { useMultipleImageUploads } from "@/hooks/useImageUpload";
+import { BrandMark } from "@/components/BrandMark";
 
 export function CreatePage() {
   const navigate = useNavigate();
@@ -113,10 +114,7 @@ export function CreatePage() {
             <div className="flex items-center justify-between h-16">
               <div className="flex items-center gap-6">
 <Link to="/" className="flex items-center gap-2">
-              <div className="p-2 bg-primary rounded-lg">
-                <DollarSign className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="font-display text-xl font-bold text-foreground">CertiPay</span>
+              <BrandMark />
             </Link>
                 <nav className="hidden md:flex items-center gap-1">
                   <Link to="/create" className="px-3 py-2 rounded-lg text-sm font-medium text-primary bg-primary/10">
