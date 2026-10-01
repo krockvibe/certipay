@@ -69,7 +69,7 @@ export function ReceiptPreview({ data, className }: ReceiptPreviewProps) {
                     width: "auto",
                     objectFit: "contain",
                     objectPosition: "left top",
-                    marginLeft: "-4px",
+                    marginLeft: "-8px",
                   }}
                 />
               )}
