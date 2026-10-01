@@ -6,9 +6,13 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number, currency: string = "USD"): string {
+  // narrowSymbol renders ZAR as "R" rather than "ZAR", and leaves the symbol-only
+  // currencies ($ EUR GBP R$ INR JPY) unchanged. en-US keeps comma grouping on all
+  // of them instead of switching to en-ZA's space separators and trailing decimal comma.
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency,
+    currencyDisplay: "narrowSymbol",
     minimumFractionDigits: 2,
   }).format(amount);
 }
