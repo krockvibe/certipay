@@ -97,29 +97,32 @@ export function TrackPage() {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 flex flex-col items-center pt-8">
+        <main className="flex-1 flex flex-col items-center justify-center pt-6 sm:pt-8">
           {/* STATE 1 & 2 & 3 & 4: Empty, Invalid, Not Found, Loading */}
           {!receipt && !isLoading && (
-            <section className="w-full max-w-md text-center">
-              <h1 className="text-3xl md:text-4xl font-medium tracking-tight text-[#07111F] mb-2">
+            <section className="w-full max-w-md px-5 text-center">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-medium tracking-tight text-[#07111F] mb-2">
                 Track your transfer
               </h1>
-              <p className="text-sm text-[#526B83] mb-8">
+              <p className="text-sm text-[#526B83] mb-6 sm:mb-8">
                 Enter the 10-digit receipt code your sender shared with you.
               </p>
 
-              {/* Tracking Form */}
-              <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-2 max-w-md mx-auto">
-                <div className="flex-1 min-w-0">
+              {/* Tracking Form. Stacks and centres on mobile, side-by-side from sm up. */}
+              <form
+                onSubmit={handleSubmit}
+                className="mx-auto flex w-full max-w-xs flex-col items-center gap-3 sm:max-w-md sm:flex-row sm:gap-2"
+              >
+                <div className="w-full min-w-0 sm:flex-1">
                   <input
                     id="receiptCode"
                     inputMode="numeric"
                     maxLength={10}
                     autoComplete="off"
-                    placeholder="e.g. 1234567890"
+                    placeholder="0000000000"
                     value={code}
                     onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 10))}
-                    className="w-full rounded-xl border border-[#DCE3E9] bg-white px-4 py-3 font-medium text-center text-lg tracking-widest focus:outline-none focus:ring-2 focus:ring-[#078BC5] transition-colors"
+                    className="w-full rounded-xl border border-[#DCE3E9] bg-white px-3 py-2.5 text-center text-base font-medium tracking-[0.25em] focus:outline-none focus:ring-2 focus:ring-[#078BC5] transition-colors sm:px-4 sm:py-3 sm:text-lg sm:tracking-widest"
                     disabled={isLoading}
                     aria-invalid={!!error}
                     aria-label="10-digit receipt code"
@@ -129,11 +132,9 @@ export function TrackPage() {
                 <button
                   type="submit"
                   disabled={isLoading || !/^\d{10}$/.test(code)}
-                  className="rounded-xl bg-[#078BC5] py-3 px-6 text-white text-sm font-medium flex items-center gap-2 transition-colors hover:shadow-lg"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#078BC5] px-6 py-2.5 text-sm font-medium text-white transition-colors hover:shadow-lg disabled:opacity-50 sm:w-auto sm:py-3"
                 >
-                  <span className="hidden sm:inline">
-                    <Search className="h-4 w-4" />
-                  </span>
+                  <Search className="h-4 w-4" />
                   <span>Track</span>
                 </button>
               </form>
