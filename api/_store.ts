@@ -63,6 +63,10 @@ export async function saveReceiptToStore(code: string, receipt: unknown) {
     contentType: "application/json",
     // Deterministic path, so a re-publish overwrites the same code in place.
     addRandomSuffix: false,
+    // @vercel/blob 2.x throws when the destination already exists unless this is
+    // set. Without it the first save succeeds and every later edit fails, so a
+    // shared link would keep serving the original receipt forever.
+    allowOverwrite: true,
     token: process.env.BLOB_READ_WRITE_TOKEN,
   } as Parameters<typeof client.put>[2]);
 
