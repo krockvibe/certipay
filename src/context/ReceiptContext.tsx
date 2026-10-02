@@ -2,7 +2,7 @@ import { createContext, useContext, useReducer, useRef, type ReactNode, useEffec
 import type { ReceiptData, ReceiptFormData } from "@/types/receipt";
 import { defaultFormData } from "@/types/receipt";
 import { generateTrackingCode, generateTransactionId, clampProgress } from "@/lib/utils";
-import { publishReceipt, unpublishReceipt, backfillReceipts } from "@/lib/receiptApi";
+import { publishReceipt, unpublishReceipt, backfillReceipts, flushPendingSync, queueSync } from "@/lib/receiptApi";
 
 interface ReceiptState {
   receipts: ReceiptData[];
@@ -128,6 +128,46 @@ export function ReceiptProvider({ children }: { children: ReactNode }) {
     void backfillReceipts(state.receipts);
   }, [state.isLoading, state.receipts]);
 
+  /**
+   * Push anything that failed to reach the store. A create or edit made on a
+   * flaky connection, or while the API was briefly unavailable, would otherwise
+   * stay local for good; these hooks retry it on the next load, when the network
+   * comes back, and when the tab is opened again.
+   */
+  const receiptsRef = useRef(state.receipts);
+  useEffect(() => {
+    receiptsRef.current = state.receipts;
+  }, [state.receipts]);
+
+  useEffect(() => {
+    if (state.isLoading) return;
+
+    // Rebuilt per attempt rather than captured once, so a receipt created after
+    // this effect ran is still found when the network comes back.
+    const flush = () => {
+      const byCode = new Map(
+        receiptsRef.current.map((r) => [r.trackingCode?.trim().toUpperCase(), r])
+      );
+      void flushPendingSync((code) => byCode.get(code));
+    };
+
+    flush();
+    const onOnline = () => flush();
+    window.addEventListener("online", onOnline);
+    return () => window.removeEventListener("online", onOnline);
+  }, [state.isLoading]);
+
+  /**
+   * Publish a receipt, and if that fails remember to try again. Queueing on
+   * failure is what turns a dropped network request into a delayed update
+   * instead of a permanent divergence between this device and the shared store.
+   */
+  const syncOrQueue = (receipt: ReceiptData) => {
+    void publishReceipt(receipt).then((ok) => {
+      if (!ok) queueSync(receipt.trackingCode ?? "");
+    });
+  };
+
   const updateForm = (data: Partial<ReceiptFormData>) => {
     dispatch({ type: "UPDATE_FORM", payload: data });
   };
@@ -172,8 +212,8 @@ export function ReceiptProvider({ children }: { children: ReactNode }) {
     };
     dispatch({ type: "ADD_RECEIPT", payload: receipt });
     // Publish so the code resolves on other devices too. Failure is non-fatal:
-    // the local copy is already saved.
-    void publishReceipt(receipt);
+    // the local copy is already saved, and the queue guarantees a retry.
+    syncOrQueue(receipt);
     return receipt;
   };
 
@@ -223,7 +263,7 @@ export function ReceiptProvider({ children }: { children: ReactNode }) {
     dispatch({ type: "UPDATE_RECEIPT", payload: receipt });
     dispatch({ type: "SET_EDITING", payload: null });
     // Re-publish under the same code so edits are visible to anyone tracking it.
-    void publishReceipt(receipt);
+    syncOrQueue(receipt);
     return receipt;
   };
 
@@ -264,6 +304,12 @@ export function ReceiptProvider({ children }: { children: ReactNode }) {
         footerText: receipt.footerText,
         backgroundColor: receipt.backgroundColor,
         brandColor: receipt.brandColor,
+        // Carried over so the edit form and its live preview show the original
+        // identifiers. Without these the create page sees no code and generates
+        // a fresh one, so the preview disagreed with the receipt being edited
+        // even though the save itself kept the real code.
+        trackingCode: receipt.trackingCode,
+        transactionId: receipt.transactionId,
         logoFile: null,
         bankLogoFile: null,
         receiptImageFile: null,

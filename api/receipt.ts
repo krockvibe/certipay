@@ -3,9 +3,9 @@ import {
   readReceiptFromStore,
   saveReceiptToStore,
   deleteReceiptFromStore,
+  receiptExistsInStore,
   isStoreConfigured,
   methodNotAllowed,
-  setBlobBaseUrl,
 } from "./_store.js";
 
 const CODE_RE = /^\d{10}$/;
@@ -18,10 +18,6 @@ const CODE_RE = /^\d{10}$/;
  * created the receipt.
  */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (process.env.BLOB_BASE_URL) {
-    setBlobBaseUrl(process.env.BLOB_BASE_URL);
-  }
-
   if (!isStoreConfigured()) {
     return res.status(503).json({
       error: "store_unavailable",
@@ -36,9 +32,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!CODE_RE.test(code)) {
       return res.status(400).json({ error: "invalid_code" });
     }
-    const receipt = await readReceiptFromStore(code);
+    const exists = await receiptExistsInStore(code);
     res.setHeader("Cache-Control", "no-store");
-    return res.status(receipt ? 200 : 404).end();
+    return res.status(exists ? 200 : 404).end();
   }
 
   if (req.method === "GET") {
@@ -51,6 +47,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!receipt) {
       return res.status(404).json({ error: "not_found" });
     }
+    // Never let a proxy hold on to a receipt body; a stale copy here is what made
+    // an edited receipt look unchanged on the tracking page.
+    res.setHeader("Cache-Control", "no-store");
     return res.status(200).json({ code: code.toUpperCase(), receipt });
   }
 
