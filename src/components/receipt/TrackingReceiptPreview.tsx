@@ -186,10 +186,13 @@ export function TrackingReceiptPreview({ data, className }: TrackingReceiptPrevi
               alt={`${data.bankName || "Bank"} logo`}
               className="bank-logo-footer"
               style={{
-                height: "24px",
-                maxWidth: "120px",
+                // Same dimensions and top alignment as the header logo, so the
+                // brand reads consistently wherever it appears on the receipt.
+                height: "64px",
+                maxWidth: "320px",
                 width: "auto",
                 objectFit: "contain",
+                objectPosition: "left top",
               }}
             />
           ) : (
