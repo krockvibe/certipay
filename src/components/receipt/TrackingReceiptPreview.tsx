@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import type { ReceiptData, ReceiptFormData } from "@/types/receipt";
-import { formatCurrency, generateTrackingCode } from "@/lib/utils";
+import { formatCurrency, generateTrackingCode, clampProgress } from "@/lib/utils";
 
 interface TrackingReceiptPreviewProps {
   data: ReceiptData | ReceiptFormData;
@@ -18,7 +18,7 @@ const statusColors = {
 export function TrackingReceiptPreview({ data, className }: TrackingReceiptPreviewProps) {
   const amount = typeof data.amount === "string" ? parseFloat(data.amount) : (data.amount || 0);
   const money = formatCurrency(amount, data.currency || "USD");
-  const progress = typeof data.progress === "string" ? parseInt(data.progress) : (data.progress || 0);
+  const progress = clampProgress(data.progress);
   const sender = data.senderName || "IJKL";
   const recipient = data.receiverName || "EFGH";
   const bankName = data.bankName || "CHASE";
@@ -109,9 +109,9 @@ export function TrackingReceiptPreview({ data, className }: TrackingReceiptPrevi
             <span>{progress}%</span>
           </div>
           <div className="progress-track">
-            <div 
-              className="progress-fill" 
-              style={{ width: `${Math.max(0, Math.min(100, progress))}%` }}
+            <div
+              className="progress-fill"
+              style={{ width: `${progress}%` }}
             ></div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import React from "react";
 import type { ReceiptData } from "@/types/receipt";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate, clampProgress } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
@@ -33,6 +33,7 @@ export function ReceiptPreview({ data, className }: ReceiptPreviewProps) {
   const statusColor = statusConfig[data.status].color;
   const feeStatusLabel = feeStatusConfig[data.feeStatus].label;
   const feeStatusColor = feeStatusConfig[data.feeStatus].color;
+  const progress = clampProgress(data.progress);
 
   const receiptStyle: React.CSSProperties = {
     backgroundColor: data.backgroundColor,
@@ -114,9 +115,9 @@ export function ReceiptPreview({ data, className }: ReceiptPreviewProps) {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-foreground">Transaction Progress</span>
-              <span className="text-sm font-semibold" style={{ color: data.brandColor }}>{data.progress}%</span>
+              <span className="text-sm font-semibold" style={{ color: data.brandColor }}>{progress}%</span>
             </div>
-            <Progress value={data.progress} className="h-3" />
+            <Progress value={progress} className="h-3" />
             <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Started</span>
               <span>In Progress</span>

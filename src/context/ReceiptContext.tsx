@@ -1,7 +1,7 @@
 import { createContext, useContext, useReducer, useRef, type ReactNode, useEffect } from "react";
 import type { ReceiptData, ReceiptFormData } from "@/types/receipt";
 import { defaultFormData } from "@/types/receipt";
-import { generateTrackingCode, generateTransactionId } from "@/lib/utils";
+import { generateTrackingCode, generateTransactionId, clampProgress } from "@/lib/utils";
 import { publishReceipt, unpublishReceipt, backfillReceipts } from "@/lib/receiptApi";
 
 interface ReceiptState {
@@ -153,7 +153,7 @@ export function ReceiptProvider({ children }: { children: ReactNode }) {
       status: formData.status,
       dateTime: formData.dateTime,
       paymentMethod: formData.paymentMethod,
-      progress: parseInt(formData.progress) || 0,
+      progress: clampProgress(formData.progress),
       feeAmount: parseFloat(formData.feeAmount) || 0,
       feeStatus: formData.feeStatus,
       billingWarning: formData.billingWarning,
@@ -203,7 +203,7 @@ export function ReceiptProvider({ children }: { children: ReactNode }) {
       status: formData.status,
       dateTime: formData.dateTime,
       paymentMethod: formData.paymentMethod,
-      progress: parseInt(formData.progress) || 0,
+      progress: clampProgress(formData.progress),
       feeAmount: parseFloat(formData.feeAmount) || 0,
       feeStatus: formData.feeStatus,
       billingWarning: formData.billingWarning,
@@ -253,7 +253,7 @@ export function ReceiptProvider({ children }: { children: ReactNode }) {
         status: receipt.status,
         dateTime: receipt.dateTime,
         paymentMethod: receipt.paymentMethod,
-        progress: String(receipt.progress),
+        progress: String(clampProgress(receipt.progress)),
         feeAmount: String(receipt.feeAmount),
         feeStatus: receipt.feeStatus,
         billingWarning: receipt.billingWarning,

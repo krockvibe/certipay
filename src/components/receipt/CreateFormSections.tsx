@@ -21,6 +21,18 @@ interface FormSectionProps {
   className?: string;
 }
 
+/**
+ * Clamps progress while it is being typed, but lets the field sit empty so a
+ * half-typed number is not rewritten under the cursor. The empty case still
+ * renders as 0% on the receipt via clampProgress.
+ */
+function clampProgressInput(raw: string): string {
+  if (raw === "" || raw === "-") return raw;
+  const parsed = parseInt(raw, 10);
+  if (Number.isNaN(parsed)) return "0";
+  return String(Math.max(0, Math.min(100, parsed)));
+}
+
 export function FormSection({ title, description, icon, children, className }: FormSectionProps) {
   return (
     <div className={cn("space-y-4 p-6 bg-card border rounded-xl transition-all duration-200 hover:shadow-md", className)}>
@@ -164,7 +176,7 @@ export function TransactionSection() {
             min="0"
             max="100"
             value={currentForm.progress}
-            onChange={(e) => updateForm({ progress: e.target.value })}
+            onChange={(e) => updateForm({ progress: clampProgressInput(e.target.value) })}
             placeholder="80"
           />
         </div>

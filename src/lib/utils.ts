@@ -28,6 +28,23 @@ export function formatDate(date: Date | string): string {
   });
 }
 
+/**
+ * Normalises the transaction progress percentage.
+ *
+ * The form holds progress as a string while the saved receipt stores a number,
+ * and the two receipt renderings read it directly. Without a single clamp they
+ * disagree: the tracking bar clamped its fill but printed the raw number, and the
+ * detailed receipt passed the raw value straight to Progress, which pushes the
+ * indicator off the track for anything over 100. Every reader now goes through
+ * here so the label and the bar always agree, on every page.
+ */
+export function clampProgress(value: string | number | null | undefined): number {
+  if (value === null || value === undefined || value === "") return 0;
+  const parsed = typeof value === "number" ? value : parseInt(value, 10);
+  if (Number.isNaN(parsed)) return 0;
+  return Math.max(0, Math.min(100, Math.round(parsed)));
+}
+
 export function generateTrackingCode(): string {
   const values = new Uint32Array(10);
   crypto.getRandomValues(values);
