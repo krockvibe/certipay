@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Search, AlertCircle, Loader2, DollarSign } from "lucide-react";
 import { fetchSharedReceipt } from "@/lib/receiptApi";
@@ -95,22 +95,28 @@ export function TrackPage() {
     return () => window.removeEventListener("focus", refresh);
   }, [trackedCode]);
 
-  // Initialize from the ?code= query param. Declared after handleSearch so
-  // the callback is initialized before the effect that references it.
+  // Initialize from the ?code= query param, which is what a shared tracking link
+  // carries. Declared after handleSearch so the callback is initialized before the
+  // effect that references it.
+  const urlCode = searchParams.get("code")?.trim().toUpperCase() ?? "";
+  const handledCodeRef = useRef<string | null>(null);
+
   useEffect(() => {
-    const urlCode = searchParams.get("code");
-    if (!urlCode) return;
-    const normalized = urlCode.trim().toUpperCase();
-    setCode(normalized);
-    // Wait for the localStorage copy to load before searching, otherwise the
-    // lookup runs against an empty store and reports a false "not found".
     if (isHydrating) return;
-    void handleSearch(normalized);
-    // handleSearch is stable for the inputs it reads; re-running on every
-    // change would re-trigger the search and loop via setSearchParams.
-    // Re-run when hydration finishes so the deferred search actually fires.
+    if (!urlCode) return;
+    // Searching rewrites ?code=, so without this guard the write would re-trigger
+    // the effect and loop.
+    if (handledCodeRef.current === urlCode) return;
+
+    handledCodeRef.current = urlCode;
+    setCode(urlCode);
+    // Waits for the localStorage copy to load before searching, otherwise the
+    // lookup runs against an empty store and reports a false "not found".
+    void handleSearch(urlCode);
+    // handleSearch is stable for the inputs it reads; re-running it on every
+    // render would re-trigger the search and loop via setSearchParams.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isHydrating]);
+  }, [isHydrating, urlCode]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,6 +220,7 @@ export function TrackPage() {
                     setRemoteReceipt(null);
                     setCode("");
                     setError(null);
+                    handledCodeRef.current = null;
                     setSearchParams({}, { replace: true });
                   }}
                   className="text-xs text-[#526B83] underline hover:text-[#078BC5] transition-colors"

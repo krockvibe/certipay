@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Plus, Search, Edit, Trash2, Copy, Eye, LogOut, ChevronLeft, Shield, DollarSign, Clock, FileText, CheckCircle, XCircle, Loader2, X, AlertCircle } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Copy, Eye, Share2, LogOut, ChevronLeft, Shield, DollarSign, Clock, FileText, CheckCircle, XCircle, Loader2, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useReceipts } from "@/context/ReceiptContext";
 import { ReceiptPreview } from "@/components/receipt/ReceiptPreview";
 import { TrackingReceiptPreview } from "@/components/receipt/TrackingReceiptPreview";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency, formatDate, buildTrackingLink } from "@/lib/utils";
 import type { ReceiptData } from "@/types/receipt";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MobileNav } from "@/components/MobileNav";
@@ -135,6 +135,40 @@ export function DashboardPage() {
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code);
     toast({ title: "Copied!", description: "Receipt code copied", variant: "success" });
+  };
+
+  /**
+   * Share the tracking link so anyone who receives it can open the receipt
+   * directly, with no account and no need to know this site. Falls back to
+   * copying the link where the platform has no share sheet, which is the case on
+   * desktop browsers.
+   */
+  const shareLink = async (code: string, title = "Track your transfer") => {
+    const url = buildTrackingLink(code);
+
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title, text: `Track receipt ${code}`, url });
+        return;
+      } catch {
+        // A cancelled share sheet is not a failure; fall through to copying.
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: "Link copied",
+        description: "Anyone with this link can view the receipt.",
+        variant: "success",
+      });
+    } catch {
+      toast({
+        title: "Copy failed",
+        description: `Share this code instead: ${code}`,
+        variant: "destructive",
+      });
+    }
   };
 
   const handleSignOut = () => {
@@ -326,6 +360,14 @@ export function DashboardPage() {
                           <Button
                             variant="outline"
                             size="icon"
+                            onClick={() => shareLink(receipt.trackingCode)}
+                            title="Share tracking link"
+                          >
+                            <Share2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
                             onClick={() => handleDelete(receipt)}
                             title="Delete"
                             className="text-destructive hover:bg-destructive/10"
@@ -372,6 +414,9 @@ export function DashboardPage() {
                             <div className="flex items-center justify-end gap-2">
                               <Button variant="ghost" size="icon" onClick={() => copyCode(receipt.trackingCode)} title="Copy code">
                                 <Copy className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => shareLink(receipt.trackingCode)} title="Share tracking link">
+                                <Share2 className="h-4 w-4" />
                               </Button>
                               <Button variant="ghost" size="icon" onClick={() => handleView(receipt)} title="View tracking">
                                 <Eye className="h-4 w-4" />
@@ -421,6 +466,10 @@ export function DashboardPage() {
                 <Button variant="outline" onClick={() => copyCode(selectedReceipt.trackingCode)}>
                   <Copy className="h-4 w-4 mr-2" />
                   Copy Code
+                </Button>
+                <Button variant="outline" onClick={() => shareLink(selectedReceipt.trackingCode)}>
+                  <Share2 className="h-4 w-4 mr-2" />
+                  Share Link
                 </Button>
                 <Button onClick={() => navigate(`/track?code=${selectedReceipt.trackingCode}`)}>
                   <Eye className="h-4 w-4 mr-2" />

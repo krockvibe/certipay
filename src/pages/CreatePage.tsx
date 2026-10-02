@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft, Copy, Check, AlertTriangle, Loader2, DollarSign, Eye } from "lucide-react";
+import { ArrowLeft, Copy, Check, AlertTriangle, Loader2, DollarSign, Eye, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,7 +8,7 @@ import { Toast, ToastProvider, ToastViewport, ToastTitle, ToastDescription, Toas
 import { useToast } from "@/hooks/useToast";
 import { useReceipts } from "@/context/ReceiptContext";
 import { useAuth } from "@/context/AuthContext";
-import { generateTrackingCode } from "@/lib/utils";
+import { generateTrackingCode, buildTrackingLink } from "@/lib/utils";
 import {
   PartiesSection,
   TransactionSection,
@@ -101,6 +101,39 @@ export function CreatePage() {
   const goToTrack = useCallback((code: string) => {
     navigate(`/track?code=${code}`);
   }, [navigate]);
+
+  /**
+   * Send the tracking link so the recipient can open the receipt on any device,
+   * with no account. Sharing only the code leaves them needing to already know
+   * this site and type it in by hand.
+   */
+  const shareLink = useCallback(async (code: string) => {
+    const url = buildTrackingLink(code);
+
+    if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title: "Track your transfer", text: `Track receipt ${code}`, url });
+        return;
+      } catch {
+        // A cancelled share sheet is not a failure; fall through to copying.
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: "Link copied",
+        description: "Anyone with this link can view the receipt.",
+        variant: "success",
+      });
+    } catch {
+      toast({
+        title: "Copy failed",
+        description: `Share this code instead: ${code}`,
+        variant: "destructive",
+      });
+    }
+  }, [toast]);
 
   const isFormValid = currentForm.senderName && currentForm.receiverName && currentForm.bankName && currentForm.accountNumber && currentForm.amount;
 
@@ -236,6 +269,14 @@ export function CreatePage() {
                               aria-label="Copy tracking code"
                             >
                               <Copy className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => shareLink(generatedReceipt.code)}
+                              aria-label="Share tracking link"
+                            >
+                              <Share2 className="h-4 w-4" />
                             </Button>
                           </div>
                           <div className="flex gap-2">

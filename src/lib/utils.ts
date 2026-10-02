@@ -54,3 +54,13 @@ export function generateTrackingCode(): string {
 export function generateTransactionId(): string {
   return `TXN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
 }
+
+/**
+ * A link a recipient can open on any device, no account needed. Sharing the bare
+ * code alone leaves the recipient needing to already know this site and to type
+ * it in by hand, which is the step that most often goes wrong.
+ */
+export function buildTrackingLink(code: string): string {
+  const origin = typeof window !== "undefined" ? window.location.origin : "";
+  return `${origin}/track?code=${encodeURIComponent(code.trim().toUpperCase())}`;
+}
