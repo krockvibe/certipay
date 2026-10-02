@@ -375,9 +375,9 @@
 .powered { color: #91a2bb; font-size: 10px; }
 
 .visa-brandmark {
-  height: 28px;
+  height: 9.3px;
   width: auto;
-  max-width: 90px;
+  max-width: 30px;
   object-fit: contain;
   object-position: right center;
 }
