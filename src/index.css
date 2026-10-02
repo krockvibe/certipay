@@ -373,33 +373,13 @@
 }
 
 .powered { color: #91a2bb; font-size: 10px; }
-.visa-badge {
-  background: linear-gradient(135deg, #1a1f71 0%, #2d3aa0 100%);
-  color: #fff;
-  font-size: 10px;
-  font-weight: 700;
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  font-style: italic;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  padding: 3px 10px;
-  border-radius: 2px;
-  white-space: nowrap;
-  box-shadow: 0 1px 3px rgba(26, 31, 113, 0.4), inset 0 1px 0 rgba(255,255,255,0.2);
-  border: 1px solid rgba(255,255,255,0.15);
-  /* VISA-style gold accent */
-  position: relative;
-  overflow: hidden;
-}
-.visa-badge::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, transparent 0%, rgba(255,215,0,0.1) 50%, transparent 100%);
-  pointer-events: none;
+
+.visa-brandmark {
+  height: 28px;
+  width: auto;
+  max-width: 90px;
+  object-fit: contain;
+  object-position: right center;
 }
 
 .receipt-code {

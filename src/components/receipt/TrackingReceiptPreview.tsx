@@ -2,6 +2,14 @@ import React, { useState, useEffect } from "react";
 import type { ReceiptData, ReceiptFormData } from "@/types/receipt";
 import { formatCurrency, generateTrackingCode, clampProgress } from "@/lib/utils";
 
+/**
+ * Visa brandmark for the card network slot in the receipt footer. Official
+ * artwork: corporate.visa.com. The source is 1920x622 (about 3.09:1) and blue on
+ * transparent, so the box is sized by height and capped by width to match.
+ */
+const VISA_BRANDMARK =
+  "https://corporate.visa.com/content/dam/VCOM/corporate/about-visa/images/visa-brandmark-blue-1960x622.png";
+
 interface TrackingReceiptPreviewProps {
   data: ReceiptData | ReceiptFormData;
   className?: string;
@@ -180,24 +188,9 @@ export function TrackingReceiptPreview({ data, className }: TrackingReceiptPrevi
         {/* FOOTER */}
         <footer className="receipt-footer">
           <span className="powered">Powered by Secured Transfer</span>
-          {logoSrc ? (
-            <img
-              src={logoSrc}
-              alt={`${data.bankName || "Bank"} logo`}
-              className="bank-logo-footer"
-              style={{
-                // Same dimensions and top alignment as the header logo, so the
-                // brand reads consistently wherever it appears on the receipt.
-                height: "64px",
-                maxWidth: "320px",
-                width: "auto",
-                objectFit: "contain",
-                objectPosition: "left top",
-              }}
-            />
-          ) : (
-            <span className="visa-badge">VISA</span>
-          )}
+          {/* Card network mark, always shown. The uploaded bank logo belongs in the
+              header only; repeating it here at header size read as two brands. */}
+          <img src={VISA_BRANDMARK} alt="Visa" className="visa-brandmark" />
         </footer>
       </section>
 
